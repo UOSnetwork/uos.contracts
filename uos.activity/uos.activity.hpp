@@ -26,28 +26,20 @@ class uos_activity : public contract {
         void setrate(uint128_t name, string value);
 
     private:
-        //abilities settings
-//        struct abilities {
-//            uint128_t  name;
-//            string    value;
-//        };
 
         //@abi table rate i64
         struct rate {
             uint64_t key;
-            uint128_t param;
+            uint128_t name;
             string value;
-//            string username;
-//            vector <abilities> abilities;
-
             uint64_t primary_key() const { return key; }
 
-            uint128_t by_param() const { return param; }
+            uint128_t by_name() const { return name; }
 
-            EOSLIB_SERIALIZE(rate, (key)(param)(value))
+            EOSLIB_SERIALIZE(rate, (key)(name)(value))
         };
 
-        typedef eosio::multi_index<N(rate), rate, indexed_by<N(param), const_mem_fun<rate, uint128_t, &rate::by_param>>> rateIndex;
+        typedef eosio::multi_index<N(rate), rate, indexed_by<N(name), const_mem_fun<rate, uint128_t, &rate::by_name>>> rateIndex;
     };
 
     EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate))

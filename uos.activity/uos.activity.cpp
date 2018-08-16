@@ -27,7 +27,7 @@
 
         rates.emplace(_self, [&](auto &rate) {
             rate.key = rates.available_primary_key();
-            rate.param = name;
+            rate.name = name;
             rate.value = value;
         });
     }
