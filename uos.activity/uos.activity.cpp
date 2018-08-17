@@ -17,17 +17,20 @@
 
     }
 
-    void uos_activity::setrate(uint128_t name, string value)
+    void uos_activity::setrate(string name, string value)
     {
 
-        //       require_auth(_self);
+         //require_auth(_self);
+        checksum256 result;
+        sha256((char *)name.c_str(), strlen(&name[0]), &result);
+
         rateIndex rates(_self, _self);
         auto iterator = rates.find(_self);
         eosio_assert(iterator == rates.end(), "Address for account already exists");
 
         rates.emplace(_self, [&](auto &rate) {
             rate.key = rates.available_primary_key();
-            rate.name = name;
+            rate.name = result;
             rate.value = value;
         });
     }
