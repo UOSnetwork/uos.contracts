@@ -35,20 +35,21 @@ class uos_activity : public contract {
         ///@abi table rate i64
         struct rate {
             uint64_t key;
-            checksum256 name;
+            checksum256 name_hash;
             string value;
+            string acc_name;
             uint64_t primary_key() const { return key; }
-            key256 by_name() const {return get_name(name);}
+            key256 by_name() const {return get_name(name_hash);}
 
             static key256 get_name(const checksum256& name) {
                 const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&name);
                 return key256::make_from_word_sequence<uint64_t>(p64[0], p64[1], p64[2], p64[3]);
             }
 
-            EOSLIB_SERIALIZE(rate, (key)(name)(value))
+            EOSLIB_SERIALIZE(rate, (key)(name_hash)(value)(acc_name))
         };
 
-        typedef eosio::multi_index<N(rate), rate, indexed_by<N(name), const_mem_fun<rate, key256, &rate::by_name>>> rateIndex;
+        typedef eosio::multi_index<N(rate), rate, indexed_by<N(name_hash), const_mem_fun<rate, key256, &rate::by_name>>> rateIndex;
     };
 
      EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate))
