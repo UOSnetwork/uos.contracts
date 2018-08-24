@@ -23,10 +23,10 @@ namespace UOS {
         void usertouser(const account_name acc_from, const account_name acc_to, uint8_t interaction_type_id);
 
         //@abi action
-        void makecontent(uint64_t acc, string content_id, uint8_t content_type_id, string parent_content_id);
+        void makecontent(const account_name acc, string content_id, uint8_t content_type_id, string parent_content_id);
 
         //@abi action
-        void usertocont(uint64_t acc, string content_id, uint8_t interaction_type_id);
+        void usertocont(const account_name acc, string content_id, uint8_t interaction_type_id);
 
         //@abi action
         void setrate(string name, string value);
@@ -34,6 +34,10 @@ namespace UOS {
         //@abi action
         void eraserate(uint64_t index);
 
+        /**
+         * @brief erase n-record, 0 -all record
+         * @param number
+         */
         //@abi action
         void erase(uint64_t number);
 

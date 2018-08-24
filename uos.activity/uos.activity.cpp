@@ -1,22 +1,28 @@
 #include "uos.activity.hpp"
 
 namespace UOS {
-    void uos_activity::usertouser(const account_name acc_from, const account_name acc_to, uint8_t interaction_type_id) {
+    void uos_activity::usertouser(const account_name acc_from, const account_name acc_to, uint8_t interaction_type_id)
+    {
+        eosio_assert( acc_from != acc_to, "cannot transfer to self" );
+        require_auth( acc_from );
+        eosio_assert( is_account( acc_to ), "to account does not exist");
 
     }
 
-    void
-    uos_activity::makecontent(account_name acc, string content_id, uint8_t content_type_id, string parent_content_id) {
+    void uos_activity::makecontent(account_name acc, string content_id, uint8_t content_type_id, string parent_content_id)
+    {
+        require_auth( acc );
 
     }
 
 
-    void uos_activity::usertocont(account_name acc, string content_id, uint8_t interaction_type_id) {
-
+    void uos_activity::usertocont(account_name acc, string content_id, uint8_t interaction_type_id)
+    {
+        require_auth( acc);
     }
 
     void uos_activity::setrate(string name, string value) {
-        //require_auth(_self);
+        require_auth(_self);
         checksum256 result;
         sha256((char *) name.c_str(), strlen(&name[0]), &result);
         rateIndex rates(_self, _self);
