@@ -28,12 +28,8 @@ namespace UOS {
         rateIndex rates(_self, _self);
 
         string name_acc = name;
-        const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&result);
         auto secondary_index = rates.get_index<N(name_hash)>();
-        auto itr = secondary_index.lower_bound(
-                key256::make_from_word_sequence<uint64_t>(p64[0], p64[1], p64[2], p64[3]));
-        auto end_itr = secondary_index.end();
-        auto beg_itr = secondary_index.begin();
+        auto itr = secondary_index.lower_bound(rate::get_hash(result));
 
         if (itr->acc_name == name_acc) {
 //        secondary_index.erase(itr);//erase should be failed
@@ -44,9 +40,6 @@ namespace UOS {
                 item.value = value;
             });
         } else {
-            auto iterator = rates.find(_self);
-            eosio_assert(iterator == rates.end(), "Primary key already exists");
-
             rates.emplace(_self, [&](auto &rate) {
                 rate.key = rates.available_primary_key();
                 rate.name_hash = result;
