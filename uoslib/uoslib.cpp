@@ -13,7 +13,6 @@ namespace uos{
         char buf[s];
         auto size = read_transaction(buf, s);
         eosio::transaction trx = eosio::unpack<eosio::transaction>(buf, s);
-        trx.
         std::set<eosio::permission_level,permissions_comparator> ret;
         for(auto i: trx.actions){
             for( auto acc : i.authorization)
