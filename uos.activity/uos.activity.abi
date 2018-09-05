@@ -20,6 +20,29 @@
         }
       ]
     },{
+      "name": "tran",
+      "base": "",
+      "fields": [{
+          "name": "key",
+          "type": "uint64"
+        },{
+          "name": "blocknum",
+          "type": "string"
+        },{
+          "name": "transaction_id",
+          "type": "string"
+        },{
+          "name": "timestamp",
+          "type": "string"
+        },{
+          "name": "action_name",
+          "type": "string"
+        },{
+          "name": "data",
+          "type": "string"
+        }
+      ]
+    },{
       "name": "usertouser",
       "base": "",
       "fields": [{
@@ -91,6 +114,34 @@
           "type": "uint64"
         }
       ]
+    },{
+      "name": "savetran",
+      "base": "",
+      "fields": [{
+          "name": "blocknum",
+          "type": "string"
+        },{
+          "name": "transaction_id",
+          "type": "string"
+        },{
+          "name": "timestamp",
+          "type": "string"
+        },{
+          "name": "action_name",
+          "type": "string"
+        },{
+          "name": "data",
+          "type": "string"
+        }
+      ]
+    },{
+      "name": "erasetrans",
+      "base": "",
+      "fields": [{
+          "name": "number",
+          "type": "uint64"
+        }
+      ]
     }
   ],
   "actions": [{
@@ -117,6 +168,14 @@
       "name": "erase",
       "type": "erase",
       "ricardian_contract": ""
+    },{
+      "name": "savetran",
+      "type": "savetran",
+      "ricardian_contract": ""
+    },{
+      "name": "erasetrans",
+      "type": "erasetrans",
+      "ricardian_contract": ""
     }
   ],
   "tables": [{
@@ -129,6 +188,16 @@
         "uint64"
       ],
       "type": "rate"
+    },{
+      "name": "tran",
+      "index_type": "i64",
+      "key_names": [
+        "key"
+      ],
+      "key_types": [
+        "uint64"
+      ],
+      "type": "tran"
     }
   ],
   "ricardian_clauses": [],
