@@ -111,4 +111,10 @@ namespace UOS{
         //todo: add votes to accounts
     }
 
+    void uos_calculator::setasset(const eosio::asset value) {
+        require_auth(_self);
+        eosio_assert((_state.get().base_asset.symbol)!=(value.symbol),"Nothing to change");
+        //todo check if there is someone's stakes
+    }
+
 }

@@ -49,10 +49,10 @@ namespace UOS{
         void refund(const account_name acc); //todo: transfer money back from stake account +
 
         //@abi action
-        void votecalc(const account_name acc, std::vector<account_name> calcs);//todo: vote for calcs
+        void votecalc(const account_name acc, std::vector<account_name> calcs);//todo: vote for calcs+-
 
         //@abi action
-        void setasset(const asset value); //todo
+        void setasset(const asset value); //todo +-
 
         bool check_calc(const account_name calc);
 
