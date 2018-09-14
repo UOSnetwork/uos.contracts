@@ -79,46 +79,4 @@ namespace UOS {
         }
     }
 
-    void uos_activity::savetran(string blocknum, string transaction_id, string timestamp, string action_name, string data) {
-        require_auth(_self);
-
-        trans tr_index(_self, _self);
-
-        auto secondary_index = tr_index.get_index<N(tran_hash)>();
-        auto itr = secondary_index.lower_bound(tran::get_trid_key(transaction_id));
-
-        if (itr->transaction_id == transaction_id) {
-            //do nothing, transaction is already saved
-        } else {
-            //save transaction info
-
-            tr_index.emplace(_self, [&](auto &t) {
-                t.key = tr_index.available_primary_key();;
-                t.blocknum = blocknum;
-                t.transaction_id = transaction_id;
-                t.timestamp = timestamp;
-                t.action_name = action_name;
-                t.data = data;
-            });
-        }
-    }
-
-    void uos_activity::erasetrans(uint64_t number = 0) {
-        require_auth(_self);
-        trans tr_index(_self, _self);
-        if (number == 0) {
-            for (; tr_index.begin() != tr_index.end();)
-                tr_index.erase(tr_index.begin());
-        } else {
-            for (uint64_t i = 0; i < number; i++) {
-                if (tr_index.begin() != tr_index.end()) {
-                    tr_index.erase(tr_index.begin());
-                } else {
-                    //print("empty");
-                    break;
-                }
-            }
-
-        }
-    }
 }
