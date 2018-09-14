@@ -40,25 +40,25 @@ namespace UOS{
         void unregcalc(const account_name acc);
 
         //@abi action
-        void iscalc(const account_name acc); //todo: check if account is allowed to calculate activity index. It will use assert. May be add statistics for calculators? +-
+        void iscalc(const account_name acc);                    //check if account is allowed to calculate activity index. It will use assert. May be add statistics for calculators?
 
         //@abi action
-        void stake(const account_name acc, const asset value); //todo: transfer money to stake account +
+        void stake(const account_name acc, const asset value);  //transfer money to stake account
 
         //@abi action
-        void refund(const account_name acc); //todo: transfer money back from stake account +
+        void refund(const account_name acc);                    //todo: transfer money back from stake account +
 
         //@abi action
         void votecalc(const account_name acc, std::vector<account_name> calcs);//todo: vote for calcs+-
 
         //@abi action
-        void setasset(const asset value); //todo +-
+        void setasset(const asset value);                       //todo +-
 
         bool check_calc(const account_name calc);
 
     private:
 
-        //calc_info is modified producer_info
+        //  calc_info is modified producer_info
 
 
         //@abi table state i64

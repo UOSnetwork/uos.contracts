@@ -52,7 +52,8 @@ namespace UOS{
     void uos_calculator::stake(const account_name acc, const eosio::asset value) {
         require_auth(acc);
 
-        //todo paste here  "comparing symbol of stacked value with symbol of contract asset"
+        eosio_assert(value.symbol==_state.get().base_asset.symbol,"Asset symbol is incompatible with used in contract");
+
         voters_table voters(_self,acc);
         auto itr=voters.find(acc);
         if(itr == voters.end()){
@@ -90,7 +91,9 @@ namespace UOS{
 
     void uos_calculator::iscalc(const account_name acc) {
         require_auth(acc);
-        //todo check account in calc_list
+        calcs_table calcs(_self,_self);
+        auto itr = calcs.find(acc);
+        eosio_assert(itr!=calcs.end(),(string("This account is not in calcs")+name{acc}.to_string()).c_str());
     }
 
     bool uos_calculator::check_calc(const account_name acc) {
