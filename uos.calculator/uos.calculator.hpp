@@ -24,7 +24,7 @@ namespace UOS{
                 if(!_state.exists()){
                         contract_state temp;
                         temp.base_asset = asset();
-                        temp.fund_name = N(uos.cstake);
+                        temp.fund_name = N(uos.stake);
                         _state.set(temp,_self);
                 }
         }

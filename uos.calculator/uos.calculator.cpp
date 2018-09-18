@@ -26,7 +26,6 @@ namespace UOS{
 
             });
         }
-
     }
 
     void uos_calculator::rmcalc(const account_name acc) {
@@ -52,7 +51,7 @@ namespace UOS{
     void uos_calculator::stake(const account_name acc, const eosio::asset value) {
         require_auth(acc);
 
-        eosio_assert(value.symbol==_state.get().base_asset.symbol,"Asset symbol is incompatible with used in contract");
+        eosio_assert(value.symbol.name()==_state.get().base_asset.symbol.name(),"Asset symbol is incompatible with used in contract");
 
         voters_table voters(_self,acc);
         auto itr=voters.find(acc);
@@ -66,9 +65,9 @@ namespace UOS{
                a.stake+=value;
             });
         }
-        eosio_assert(is_account(N(uos.stake)),"create uos.stake first");
+        eosio_assert(is_account(_state.get().fund_name),(std::string("create uos.stake first ")+ name{_state.get().fund_name}.to_string()).c_str());
         INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},
-                                                      { acc, N(uos.stake), value, std::string("stake tokens") } );
+                                                      { acc, _state.get().fund_name, value, std::string("stake tokens") } );
 
     }
 
@@ -79,11 +78,11 @@ namespace UOS{
         eosio_assert(itr != voters.end(), "there is nothing to refund here");
         //todo check timeout
 
-        eosio_assert(is_account(N(uos.stake)),"create uos.stake first");
+        eosio_assert(is_account(_state.get().fund_name),"create uos.stake first");
 
 
-        INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {N(uos.stake), N(active)},
-                                                      { N(uos.stake), itr->owner, itr->stake, std::string("unstake tokens") } );
+        INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {_state.get().fund_name, N(active)},
+                                                      { _state.get().fund_name, itr->owner, itr->stake, std::string("unstake tokens") } );
 
         voters.erase(itr);
 
@@ -118,7 +117,7 @@ namespace UOS{
     void uos_calculator::setasset(const eosio::asset value) {
         require_auth(_self);
         eosio_assert((_state.get().base_asset.symbol)!=(value.symbol),"Nothing to change");
-        //todo check if there is someone's stakes
+        //todo check if there is someone's stake, then..
     }
 
 }
