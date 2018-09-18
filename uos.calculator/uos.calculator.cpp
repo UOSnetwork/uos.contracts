@@ -107,9 +107,10 @@ namespace UOS{
 
     void uos_calculator::votecalc(const account_name acc, std::vector<account_name> calcs) {
         require_auth(acc);
+
         for(auto item : calcs){
-            eosio_assert(is_account(item),(string("account not found: ")+std::to_string(name{item})).c_str());
-            eosio_assert(check_calc(item),(string("account is not registered or not active: ")+std::to_string(name{item})).c_str());
+            eosio_assert(is_account(item),(string("account not found: ") + (name{item}).to_string()).c_str());
+            eosio_assert(check_calc(item),(string("account is not registered or not active: ") + (name{item}).to_string()).c_str());
         }
         //todo: add votes to accounts
     }
