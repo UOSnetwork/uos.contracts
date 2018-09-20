@@ -56,7 +56,11 @@ namespace UOS{
 
         bool check_calc(const account_name calc);
 
+        asset get_stake(account_name);
+
     private:
+
+//        const CALC_NUM = 8;
 
         //  calc_info is modified producer_info
 
@@ -90,10 +94,12 @@ namespace UOS{
             account_name owner=0;
             std::vector<account_name> calcs;
             asset stake;
+            asset stake_voted;
             uint64_t primary_key() const {return owner;}
 
-            EOSLIB_SERIALIZE (voter_info, (owner)(calcs)(stake))
+            EOSLIB_SERIALIZE (voter_info, (owner)(calcs)(stake)(stake_voted))
         };
+
 
         typedef multi_index <N(calcs), calc_info> calcs_table;
 

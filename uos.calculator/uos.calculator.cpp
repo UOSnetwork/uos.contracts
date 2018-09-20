@@ -101,17 +101,49 @@ namespace UOS{
         if(itr==calcs.end())
             return false;
         return itr->is_active;
+    }
+
+    asset uos_calculator::get_stake(account_name voter) {
+        voters_table voters(_self,voter);
+        auto itr = voters.find(voter);
+        if(itr==voters.end()){
+            asset ret = _state.get().base_asset;
+            ret.amount = 0;
+            return ret;
+        }
+        return itr->stake;
 
     }
 
-    void uos_calculator::votecalc(const account_name acc, std::vector<account_name> calcs) {
-        require_auth(acc);
+    void uos_calculator::votecalc(const account_name voter, std::vector<account_name> calcs) {
+        require_auth(voter);
 
         for(auto item : calcs){
             eosio_assert(is_account(item),(string("account not found: ") + (name{item}).to_string()).c_str());
-            eosio_assert(check_calc(item),(string("account is not registered or not active: ") + (name{item}).to_string()).c_str());
+            eosio_assert(check_calc(item),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
         }
-        //todo: add votes to accounts
+
+        int64_t vote_for_each = get_stake(voter).amount/(int64_t )calcs.size();
+        eosio_assert(vote_for_each, "you can not vote zero tokens for each candidate");
+        calcs_table c_table(_self,_self);
+        for(auto item : calcs){
+            auto itr = c_table.find(item);
+            eosio_assert(itr!=c_table.end(),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
+            c_table.modify(itr,_self,[&](calc_info& info){
+               info.total_votes+=vote_for_each;
+            });
+        }
+        auto votesum = vote_for_each*(int64_t)calcs.size();
+        voters_table voters(_self,voter);
+        auto itr = voters.find(voter);
+        eosio_assert(itr!=voters.end(),"Voter not found in table");
+        voters.modify(itr,voter,[&](voter_info &vi){
+            vi.stake_voted.symbol=vi.stake.symbol;
+            vi.stake_voted.amount = votesum;
+            vi.calcs = calcs;
+        });
+
+
     }
 
     void uos_calculator::setasset(const eosio::asset value) {
