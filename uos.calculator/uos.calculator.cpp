@@ -130,13 +130,13 @@ namespace UOS{
         }
 
         int64_t vote_for_each = get_stake(voter).amount/(int64_t )calcs.size();
-        eosio_assert(vote_for_each, "you can not vote zero tokens for each candidate");
+        eosio_assert(vote_for_each>0, "you can not vote zero tokens for each candidate");
         calcs_table c_table(_self,_self);
         for(auto item : calcs){
             auto itr = c_table.find(item);
             eosio_assert(itr!=c_table.end(),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
             c_table.modify(itr,_self,[&](calc_info& info){
-               info.total_votes+=vote_for_each;
+               info.total_votes+= static_cast<uint64_t > (vote_for_each);
             });
         }
         auto votesum = vote_for_each*(int64_t)calcs.size();
@@ -151,16 +151,43 @@ namespace UOS{
         });
     }
 
-    void uos_calculator::unvote(const account_name voter, std::vector<account_name> calcs) {
+    void uos_calculator::unvote(const account_name voter, std::vector<account_name> calcs_to_unvote) {
         require_auth(voter);
-        //todo ---
+        voters_table voters(_self,voter);
+        auto itr = voters.find(voter);
+        eosio_assert(itr!=voters.end(),"Voter not found");
+
+        //todo: take out this part of code to other function {
+
+        calcs_table c_table(_self,_self);
+        voters.modify(itr,voter,[&](voter_info& vi){
+            //get votes back
+            std::vector<candidate_info> new_list;
+            for(auto calc: vi.calcs){
+                if(std::find(calcs_to_unvote.begin(),calcs_to_unvote.end(),calc.calc)!=calcs_to_unvote.end()){
+                    auto citr = c_table.find(calc.calc);
+                    eosio_assert(citr!=c_table.end(),"Something wrong with data about calc");
+                    c_table.modify(citr,_self,[&](calc_info &ci){
+                        ci.total_votes-= static_cast<uint64_t >(calc.bid);
+                    });
+                    vi.stake_voted.amount-=calc.bid;
+                    calc.bid=0;
+                }else{
+                    new_list.push_back(calc);
+                }
+            }
+            vi.calcs = new_list;
+        });
+
+        //todo: }
+
     }
 
     void uos_calculator::unvoteall(const account_name voter) {
         require_auth(voter);
         voters_table voters(_self,voter);
         auto itr = voters.find(voter);
-//        unvote(voter, itr->calcs);
+        eosio_assert(itr!=voters.end(),"Voter not found");
         std::vector<account_name> calcs_list;
         for(auto calc : itr->calcs){
             calcs_list.push_back(calc.calc);
