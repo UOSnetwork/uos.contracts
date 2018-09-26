@@ -37,6 +37,9 @@ namespace UOS{
 
         bool check_calc(const account_name calc);
 
+        //@abi action
+        void setallcalc(vector<account_name> accounts);
+
     private:
 
         //@abi table calcs i64
@@ -56,10 +59,20 @@ namespace UOS{
 
         };
 
+        //@abi table calcreg i64
+        struct calc_register{
+            account_name owner;
+
+            uint64_t primary_key() const { return owner; }
+
+            EOSLIB_SERIALIZE( calc_register, (owner))
+        };
+
         typedef multi_index <N(calcs), calc_info> calcs_table;
+        typedef multi_index <N(calcreg), calc_register> calcreg_table;
 
     };
 
-    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc))
+    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(setallcalc))
 
 }

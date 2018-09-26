@@ -62,4 +62,24 @@ namespace UOS{
         return itr->is_active;
     }
 
+    void uos_calculator::setallcalc(std::vector<account_name> accounts) {
+        require_auth(_self);
+        calcreg_table cr_table(_self, _self);
+
+        //erase all registered calculators
+        for(;cr_table.begin() != cr_table.end();)
+            cr_table.erase(cr_table.begin());
+
+        //register all account from the input
+        for(auto itr = accounts.begin(); itr != accounts.end(); itr++)
+        {
+            print(name{*itr}, "\n");
+            if(cr_table.find(*itr) == cr_table.end()) {
+                cr_table.emplace(_self, [&](auto &calc_reg) {
+                    calc_reg.owner = *itr;
+                });
+            }
+        }
+    }
+
 }
