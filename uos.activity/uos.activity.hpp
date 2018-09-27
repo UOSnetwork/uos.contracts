@@ -41,6 +41,9 @@ namespace UOS {
         //@abi action
         void erase(uint64_t number);
 
+        //@abi action
+        void makecontorg(const account_name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
+
 
     private:
 
@@ -68,6 +71,6 @@ namespace UOS {
 
     };
 
-    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase))
+    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg))
 
 }

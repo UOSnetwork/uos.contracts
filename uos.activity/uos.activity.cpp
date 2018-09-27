@@ -17,6 +17,15 @@ namespace UOS {
 
     }
 
+     void uos_activity::makecontorg(const account_name acc, string organization_id, std::string content_id, uint8_t content_type_id, std::string parent_content_id)
+    {
+        print("makecontent acc = ", name{acc}, "organization_id = ", organization_id,  " content_id = ", content_id,
+              " content_type_id = ", (int)content_type_id,
+              " parent_content_id = ", parent_content_id);
+        require_auth( acc );
+
+    }
+
 
     void uos_activity::usertocont(account_name acc, string content_id, uint8_t interaction_type_id)
     {
