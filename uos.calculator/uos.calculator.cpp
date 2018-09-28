@@ -82,4 +82,30 @@ namespace UOS{
         }
     }
 
+    void uos_calculator::reporthash(const account_name acc, string hash, uint64_t block_num, string memo) {
+        require_auth(acc);
+        print("reporthash acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "/n");
+
+        calcreg_table cr_table(_self, _self);
+        reports_table r_table(_self, _self);
+
+        //check acc to be registered as calculator
+        auto itp_reg = cr_table.find(name{acc});
+        eosio_assert(itp_reg != cr_table.end(), "account is not a registered calculator");
+
+        //check for the report with the same acc + block_num
+        auto ab_index = r_table.get_index<N(acc_block)>();
+        auto ab_hash = calc_reports::get_acc_block_hash(acc, block_num);
+        auto itr_rep = ab_index.find(ab_hash);
+        eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
+
+        r_table.emplace(_self, [&](auto &calc_rep) {
+            calc_rep.key = r_table.available_primary_key();
+            calc_rep.acc = acc;
+            calc_rep.hash = hash;
+            calc_rep.block_num = block_num;
+            calc_rep.memo = memo;
+        });
+    }
+
 }
