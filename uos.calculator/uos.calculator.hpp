@@ -123,6 +123,8 @@ namespace UOS{
 
         contract_state_singleton  _state;
 
+        bool unvote_vector(voters_table &voters, voters_table::const_iterator &itr, const account_name &voter, std::vector<account_name> &calcs_to_unvote);
+
     };
 
     EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset))

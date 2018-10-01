@@ -151,14 +151,7 @@ namespace UOS{
         });
     }
 
-    void uos_calculator::unvote(const account_name voter, std::vector<account_name> calcs_to_unvote) {
-        require_auth(voter);
-        voters_table voters(_self,voter);
-        auto itr = voters.find(voter);
-        eosio_assert(itr!=voters.end(),"Voter not found");
-
-        //todo: take out this part of code to other function {
-
+    bool uos_calculator::unvote_vector(voters_table &voters, voters_table::const_iterator &itr, const account_name &voter, std::vector<account_name> &calcs_to_unvote) {
         calcs_table c_table(_self,_self);
         voters.modify(itr,voter,[&](voter_info& vi){
             //get votes back
@@ -166,7 +159,9 @@ namespace UOS{
             for(auto calc: vi.calcs){
                 if(std::find(calcs_to_unvote.begin(),calcs_to_unvote.end(),calc.calc)!=calcs_to_unvote.end()){
                     auto citr = c_table.find(calc.calc);
-                    eosio_assert(citr!=c_table.end(),"Something wrong with data about calc");
+                    //eosio_assert(citr!=c_table.end(),"Something wrong with data about calc");
+                    if(citr==c_table.end())
+                        return false;
                     c_table.modify(citr,_self,[&](calc_info &ci){
                         ci.total_votes-= static_cast<uint64_t >(calc.bid);
                     });
@@ -178,8 +173,18 @@ namespace UOS{
             }
             vi.calcs = new_list;
         });
+        return true;
 
-        //todo: }
+    }
+
+    void uos_calculator::unvote(const account_name voter, std::vector<account_name> calcs_to_unvote) {
+        require_auth(voter);
+        voters_table voters(_self,voter);
+        auto itr = voters.find(voter);
+        eosio_assert(itr!=voters.end(),"Voter not found");
+
+        eosio_assert(unvote_vector(voters,itr,voter,calcs_to_unvote),"unvote vector error");
+
 
     }
 
@@ -192,7 +197,8 @@ namespace UOS{
         for(auto calc : itr->calcs){
             calcs_list.push_back(calc.calc);
         }
-        unvote(voter,calcs_list);
+        eosio_assert(unvote_vector(voters,itr,voter,calcs_list),"unvote vector error");
+        //unvote(voter,calcs_list);
     }
 
     void uos_calculator::setasset(const eosio::asset value) {
