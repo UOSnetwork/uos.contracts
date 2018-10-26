@@ -71,6 +71,4 @@ namespace UOS {
 
     };
 
-    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg))
-
 }

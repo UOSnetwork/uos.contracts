@@ -207,4 +207,5 @@ namespace UOS{
         //todo check if there is someone's stake, then..
     }
 
+    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset))
 }

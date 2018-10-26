@@ -127,6 +127,6 @@ namespace UOS{
 
     };
 
-    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset))
+    
 
 }
