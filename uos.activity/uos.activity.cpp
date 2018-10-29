@@ -1,4 +1,5 @@
 #include "uos.activity.hpp"
+#include <uos_contracts/uos.calculator/uos.calculator.hpp>
 
 namespace UOS {
     void uos_activity::usertouser(const account_name acc_from, const account_name acc_to, uint8_t interaction_type_id)
@@ -34,7 +35,9 @@ namespace UOS {
     }
 
     void uos_activity::setrate(string name, string value) {
-        require_auth(_self);
+
+        INLINE_ACTION_SENDER(UOS::uos_calculator,iscalc)( N(calctest1111), {N(calctest1111), N(active)},{N(name)});
+
         checksum256 result;
         sha256((char *) name.c_str(), strlen(&name[0]), &result);
         rateIndex rates(_self, _self);
@@ -63,14 +66,14 @@ namespace UOS {
     }
 
     void uos_activity::eraserate(uint64_t index) {
-        require_auth(_self);
+        require_auth(N(uos.activity));
         rateIndex rates(_self, _self);
         auto iter = rates.find(index);
         rates.erase(rates.get(index));
     }
 
     void uos_activity::erase(uint64_t number = 0) {
-        require_auth(_self);
+        require_auth(N(uos.activity));
         rateIndex rates(_self, _self);
         if (number == 0) {
             for (; rates.begin() != rates.end();)
