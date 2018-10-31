@@ -26,11 +26,22 @@ namespace UOS {
 
     }
 
-
     void uos_activity::usertocont(account_name acc, string content_id, uint8_t interaction_type_id)
     {
         print("usertocont acc = ", name{acc}, " content_id = ", content_id, " interaction_type_id = ", (int)interaction_type_id);
         require_auth( acc);
+    }
+
+    void uos_activity::dirpost(const account_name acc, std::string content_id, const account_name acc_to, uint8_t content_type_id)
+    {
+        print("dirpost acc = ", name{acc}, " content_id = ", content_id, " acc_to = ", name{acc_to}, " content_type_id = ", (int)content_type_id);
+        require_auth(acc);
+    }
+
+    void uos_activity::dirpostorg(const account_name acc, std::string content_id, string organization_to_id, uint8_t content_type_id)
+    {
+        print("dirpostorg acc = ", name{acc}, " content_id = ", content_id, " organization_to_id = ", organization_to_id, " content_type_id = ", (int)content_type_id);
+        require_auth(acc);
     }
 
     void uos_activity::setrate(string name, string value) {
@@ -88,6 +99,6 @@ namespace UOS {
         }
    }
 
-    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg))
+    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg)(dirpost)(dirpostorg))
 
 }

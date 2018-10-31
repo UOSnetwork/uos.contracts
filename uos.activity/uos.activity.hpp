@@ -29,6 +29,12 @@ namespace UOS {
         void usertocont(const account_name acc, string content_id, uint8_t interaction_type_id);
 
         //@abi action
+        void dirpost(const account_name acc, string content_id, const account_name acc_to, uint8_t content_type_id);
+
+        //@abi action
+        void dirpostorg(const account_name acc, string content_id, string organisation_to_id, uint8_t content_type_id);
+
+        //@abi action
         void setrate(string name, string value);
 
         //@abi action
