@@ -64,9 +64,27 @@ namespace UOS{
 
         asset get_stake(account_name);
 
+
+////    from uos.accounter {
+
+        //@abi action
+        void withdrawal(account_name owner);
+
+        //@abi action
+        void withdraw(account_name owner, uint64_t sum);
+
+        ////sender operations
+        //@abi action
+        void addsum(account_name issuer, account_name receiver, double sum, string message);
+
+        //@abi action
+        void regissuer(account_name issuer);
+
+////    } from uos.accounter
+
     private:
 
-//        const CALC_NUM = 8;
+        //  const CALC_NUM = 8;
 
         //  calc_info is modified producer_info
 
@@ -125,8 +143,35 @@ namespace UOS{
 
         bool unvote_vector(voters_table &voters, voters_table::const_iterator &itr, const account_name &voter, std::vector<account_name> &calcs_to_unvote);
 
-    };
+////         from uos.accounter {
 
-    
+        //@abi table account i64
+        struct account_info{
+            account_name owner;
+            double account_sum;
+
+            uint64_t  primary_key() const {return owner;}
+
+            EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
+        };
+
+        //@abi table issuers i64
+        struct issuer_info{
+            account_name issuer;
+
+            uint64_t primary_key() const {return issuer;}
+
+            EOSLIB_SERIALIZE(issuer_info,(issuer))
+        };
+
+
+        typedef multi_index <N(account),account_info> accounts_table;
+        typedef multi_index <N(issuers), issuer_info> issuers_table;
+
+        bool is_issuer(account_name acc);
+
+////         } from uos.accounter
+
+    };
 
 }
