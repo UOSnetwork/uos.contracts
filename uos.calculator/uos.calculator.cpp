@@ -271,6 +271,7 @@ namespace UOS{
 
     void uos_calculator::addsum(account_name issuer, account_name receiver, double sum, std::string message) {
         require_auth(issuer);
+        print(message);
         eosio_assert(is_account(receiver),"error account name");
         eosio_assert(is_issuer(issuer),"account is not registered as issuer");
         accounts_table actable(_self,receiver);

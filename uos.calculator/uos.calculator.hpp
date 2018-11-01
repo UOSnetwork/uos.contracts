@@ -94,6 +94,7 @@ namespace UOS{
          * @brief erase n-record, 0 -all record
          * @param number
          */
+
         //@abi action
         void erase(uint64_t number);
 
