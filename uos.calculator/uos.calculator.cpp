@@ -273,7 +273,7 @@ namespace UOS{
         require_auth(issuer);
         print(message);
         eosio_assert(is_account(receiver),"error account name");
-        eosio_assert(is_issuer(issuer),"account is not registered as issuer");
+//        eosio_assert(is_issuer(issuer),"account is not registered as issuer");
         accounts_table actable(_self,receiver);
         auto act_itr = actable.find(receiver);
         if(act_itr==actable.end()){
