@@ -71,7 +71,7 @@ namespace UOS{
         void withdrawal(account_name owner);
 
         //@abi action
-        void withdraw(account_name owner, uint64_t sum);
+        void withdraw(account_name owner, double sum);
 
         ////sender operations
         //@abi action

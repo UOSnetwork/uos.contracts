@@ -220,7 +220,7 @@ namespace UOS{
         double reward = act_itr->account_sum;
         print(reward);
         asset val;
-        val.symbol = S(4,SYS);// todo change to CORE_SYMBOL
+        val.symbol = CORE_SYMBOL;
         print(val);
         auto dotdigits = (uint64_t )val.symbol.precision();
         auto k = 1;
@@ -240,7 +240,7 @@ namespace UOS{
         INLINE_ACTION_SENDER(eosio::token, transfer) ( N(eosio.token), {_self, N(active)} ,{ _self, owner, val, std::string("transfer issued tokens for account")} );
     }
 
-    void uos_calculator::withdraw(account_name owner, uint64_t sum) {
+    void uos_calculator::withdraw(account_name owner, double sum) {
         require_auth(owner);
         double fsum = double(sum);
         accounts_table actable(_self,owner);
@@ -251,7 +251,7 @@ namespace UOS{
         }
         double reward = fsum;
         asset val;
-        val.symbol = S(4,SYS);// todo change to CORE_SYMBOL
+        val.symbol = CORE_SYMBOL;
         auto dotdigits = (uint64_t )val.symbol.precision();
         auto k = 1;
         for(uint64_t i=0;i<dotdigits;++i ){
