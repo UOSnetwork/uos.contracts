@@ -161,7 +161,7 @@ namespace UOS{
                     auto citr = c_table.find(calc.calc);
                     //eosio_assert(citr!=c_table.end(),"Something wrong with data about calc");
                     if(citr==c_table.end())
-                        return false;
+                        return false; //todo
                     c_table.modify(citr,_self,[&](calc_info &ci){
                         ci.total_votes-= static_cast<uint64_t >(calc.bid);
                     });
@@ -302,7 +302,68 @@ namespace UOS{
         return iss_itr!=isstable.end();
     }
     
+//// } from uos.accounter
+
+//// { from uos.activity
+
+    void uos_calculator::setrate(string name, string value) {
+        require_auth(_self);
+        checksum256 result;
+        sha256((char *) name.c_str(), strlen(&name[0]), &result);
+        rateIndex rates(_self, _self);
+
+        string name_acc = name;
+        auto secondary_index = rates.get_index<N(name_hash)>();
+        auto itr = secondary_index.lower_bound(rate::get_hash(result));
+
+        if (itr->acc_name == name_acc) {
+//        secondary_index.erase(itr);//erase should be failed
+            auto iter_rate = rates.find(itr->key);
+            eosio_assert(iter_rate != rates.end(), "Rate is key not found");
+
+            rates.modify(iter_rate, _self, [&](rate &item) {
+                item.value = value;
+            });
+        } else {
+            rates.emplace(_self, [&](rate &rate_item) {
+                rate_item.key = rates.available_primary_key();
+                rate_item.name_hash = result;
+                rate_item.value = value;
+                rate_item.acc_name = name_acc;
+            });
+        }
+
+    }
+
+    void uos_calculator::eraserate(uint64_t index) {
+        require_auth(_self);
+        rateIndex rates(_self, _self);
+        auto iter = rates.find(index);
+        //rates.erase(rates.get(index));
+        if(iter != rates.end())
+                rates.erase(iter);
+    }
+
+    void uos_calculator::erase(uint64_t number = 0) {
+        require_auth(_self);
+        rateIndex rates(_self, _self);
+        if (number == 0) {
+            for (; rates.begin() != rates.end();)
+                rates.erase(rates.begin());
+        } else {
+            for (uint64_t i = 0; i < number; i++) {
+                if (rates.begin() != rates.end()) {
+                    rates.erase(rates.begin());
+                } else {
+                    //print("empty");
+                    break;
+                }
+            }
+
+        }
+    }
+
+//// } from uos.activity
     
-    
-    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw))
+    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase))
 }
