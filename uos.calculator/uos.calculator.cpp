@@ -365,6 +365,57 @@ namespace UOS{
     }
 
 //// } from uos.activity
-    
-    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase))
+
+////    from branch "direct set" {
+
+    void uos_calculator::setallcalc(std::vector<account_name> accounts) {
+        require_auth(_self);
+        calcreg_table cr_table(_self, _self);
+
+        //erase all registered calculators
+        for(;cr_table.begin() != cr_table.end();)
+            cr_table.erase(cr_table.begin());
+
+        //register all account from the input
+        for(auto itr : accounts)
+        {
+            print(name{itr}, "\n");
+            if(cr_table.find(itr) == cr_table.end()) {
+                cr_table.emplace(_self, [&](auto &calc_reg) {
+                    calc_reg.owner = itr;
+                });
+            }
+        }
+    }
+
+    void uos_calculator::reporthash(const account_name acc, string hash, uint64_t block_num, string memo) {
+        require_auth(acc);
+        print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "/n");
+
+        calcreg_table cr_table(_self, _self);
+        reports_table r_table(_self, _self);
+
+        //check acc to be registered as calculator
+        auto itp_reg = cr_table.find(name{acc});
+        eosio_assert(itp_reg != cr_table.end(), "account is not a registered calculator");
+
+        //check for the report with the same acc + block_num
+        auto ab_index = r_table.get_index<N(acc_block)>();
+        auto ab_hash = calc_reports::get_acc_block_hash(acc, block_num);
+        auto itr_rep = ab_index.find(ab_hash);
+        eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
+
+        r_table.emplace(_self, [&](auto &calc_rep) {
+            calc_rep.key = r_table.available_primary_key();
+            calc_rep.acc = acc;
+            calc_rep.hash = hash;
+            calc_rep.block_num = block_num;
+            calc_rep.memo = memo;
+        });
+    }
+
+////  }  from branch "direct set"
+
+
+    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setallcalc)(reporthash))
 }

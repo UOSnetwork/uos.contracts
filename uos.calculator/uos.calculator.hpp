@@ -103,6 +103,15 @@ namespace UOS{
 
 ////    } from uos.activity
 
+////    from branch "direct set" {
+
+        //@abi action
+        void setallcalc(vector<account_name> accounts);
+
+        //@abi action
+        void reporthash(const account_name acc, string hash, uint64_t block_num, string memo);
+
+////    } from branch "direct set"
     private:
 
         //  const CALC_NUM = 8;
@@ -220,6 +229,60 @@ namespace UOS{
 
 ////        } from uos.activity
 
+
+////    from branch "direct set" {
+
+        //@abi table calcreg i64
+        struct calc_register{
+            account_name owner;
+
+            uint64_t primary_key() const { return owner; }
+
+            EOSLIB_SERIALIZE( calc_register, (owner))
+        };
+
+        typedef multi_index <N(calcreg), calc_register> calcreg_table;
+
+        //@abi table reports i64
+        struct calc_reports{
+            uint64_t key;
+            account_name acc;
+            string hash;
+            uint64_t block_num;
+            string memo;
+
+            uint64_t primary_key() const { return key; }
+            uint64_t by_block_num() const { return block_num; }
+            key256 by_acc_block() const { return get_acc_block_hash(acc, block_num); }
+
+            static key256 get_acc_block_hash(account_name _acc, uint64_t _block_num) {
+                string concat = name{_acc}.to_string() + ";" + uint64_t_to_string((unsigned long)_block_num);
+                print("acc;block_num concatenation |",concat ,"|\n");
+                checksum256 checksum_result;
+                sha256((char *) concat.c_str(), strlen(&concat[0]), &checksum_result);
+                const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&checksum_result);
+                key256 key256_result =  key256::make_from_word_sequence<uint64_t>(p64[0], p64[1], p64[2], p64[3]);
+                return  key256_result;
+            }
+
+            static std::string uint64_t_to_string(uint64_t num)
+            {
+                char str[20];
+                sprintf(str, "%llu", num);
+
+                return std::string(str);
+            }
+
+            EOSLIB_SERIALIZE(calc_reports, (key)(acc)(hash)(block_num)(memo) )
+        };
+
+        typedef multi_index <
+                N(reports), calc_reports
+                ,indexed_by<N(block_num), const_mem_fun<calc_reports, uint_fast64_t , &calc_reports::by_block_num>>
+                ,indexed_by<N(acc_block), const_mem_fun<calc_reports, key256 , &calc_reports::by_acc_block>>
+        > reports_table;
+
+////    } from branch "direct set"
     };
 
 }
