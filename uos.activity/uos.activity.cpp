@@ -77,7 +77,8 @@ namespace UOS {
         require_auth(_self);
         rateIndex rates(_self, _self);
         auto iter = rates.find(index);
-        rates.erase(rates.get(index));
+        if(iter != rates.end())
+            rates.erase(iter);
     }
 
     void uos_activity::erase(uint64_t number = 0) {
