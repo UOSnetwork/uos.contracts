@@ -392,10 +392,6 @@ namespace UOS{
     void uos_calculator::reporthash(const account_name acc, string hash, uint64_t block_num, string memo) {
         require_auth(acc);
 
-//        consensus_bl_table consensus_block(_self,_self);
-//        auto cbitr = consensus_block.find(block_num);
-//        eosio_assert(cbitr==consensus_block.end(),"Something wrong - consensus has already been found");
-
         print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "\n");
 
         calcreg_table cr_table(_self, _self);
@@ -411,8 +407,6 @@ namespace UOS{
         auto ab_hash = calc_reports::get_acc_block_hash(acc, block_num);
         auto itr_rep = ab_index.find(ab_hash);
         eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
-//        if(itr_rep != ab_index.end())
-//            r_table.erase(*itr_rep);
 
         r_table.emplace(_self, [&](calc_reports &calc_rep) {
             calc_rep.key = r_table.available_primary_key();
@@ -459,79 +453,6 @@ namespace UOS{
                 cb_item.leader = leader_name;
             });
         }
-
-
-
-//        consensus_progress cons_tab(_self,_self);
-//        auto citr = cons_tab.find(block_num);
-//        if(citr == cons_tab.end()){
-//            cons_tab.emplace(_self, [&](consensinfo &item){
-//               item.blocknum = block_num;
-//               item.first.push_back({acc,hash});
-//               for(auto i = cr_table.begin(); i!=cr_table.end(); ++i) {
-//                   if(i->owner==acc)
-//                       item.calc_hash_list.push_back({acc,hash});
-//                   else
-//                    item.calc_hash_list.push_back(calchash{i->owner,""});
-//               }
-//
-//            });
-//        }
-//        else{
-//            cons_tab.modify(citr,_self,[&](consensinfo &item){
-//               bool iscalc = false;
-//               for(auto &val : item.calc_hash_list){
-//                   if(val.calc==acc){
-//                       val.hash = hash;
-//                       iscalc = true;
-//                       break;
-//                   }
-//               }
-//               if(iscalc) {
-//                   bool found = false;
-//                   for (auto &val : item.first) {
-//                       if (val.hash == hash) {
-//                           found = true;
-//                           break;
-//                       }
-//                   }
-//                   if (!found) {
-//                       item.first.push_back({acc, hash});
-//                   }
-//               }
-//            });
-//        }
-//        size_t allcalcs = citr->calc_hash_list.size();
-//        size_t voted = 0;
-//        std::map<string,unsigned int> mhashes;
-//        for(auto item : citr->calc_hash_list){
-//            if(item.hash.length()>4) {
-//                mhashes[item.hash]++;
-//                voted++;
-//            }
-//        }
-//        if((voted*4)>(allcalcs*3)){ //75%
-//            print("Check votes");
-//            for(auto item : mhashes){
-//                if((item.second*4)>(allcalcs*3)){
-//                    //consensus
-//                    print("Found consensus ", item.first);
-//
-//                    consensus_block.emplace(_self,[&](consensblinf &citem){
-//                        citem.hash = item.first;
-//                        citem.blocknum = block_num;
-//                        for(auto hashes : citr->first){
-//                            if(hashes.hash==item.first){
-//                                citem.calc = hashes.calc;
-//                                break;
-//                            }
-//                        }
-//                        print("Winner ",citem.calc, " with hash ", citem.hash, " on block ", citem.blocknum);
-//                    });
-//                }
-//            }
-//        }
-
     }
 
 ////  }  from branch "direct set"

@@ -284,21 +284,6 @@ namespace UOS{
 
 ////    } from branch "direct set"
 
-//        struct calchash{
-//            account_name calc;
-//            string hash;
-//        };
-
-//        /// @abi table consprogress i64
-//        struct consensinfo{
-//            uint64_t blocknum;
-//            vector<calchash> calc_hash_list;
-//            vector<calchash> first;
-//
-//            uint64_t primary_key() const {return blocknum;}
-//        };
-
-
         /// @abi table consensus i64
         struct cons_block{
             uint64_t block_num;
@@ -310,7 +295,6 @@ namespace UOS{
         };
 
 
-//        typedef multi_index <N(consprogress), consensinfo> consensus_progress;
         typedef multi_index <N(consensus), cons_block> consensus_bl_table;
     };
 
