@@ -453,7 +453,7 @@ namespace UOS{
 
         if(rep_count * 4 > calc_count * 3)
         {
-            cb_table.emplace(_self, [&](consensus_block &cb_item){
+            cb_table.emplace(_self, [&](cons_block &cb_item){
                 cb_item.block_num = block_num;
                 cb_item.hash = hash;
                 cb_item.leader = leader_name;

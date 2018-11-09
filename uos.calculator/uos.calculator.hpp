@@ -300,18 +300,18 @@ namespace UOS{
 
 
         /// @abi table consensus i64
-        struct consensus_block{
+        struct cons_block{
             uint64_t block_num;
             string hash;
             account_name leader;
             uint64_t primary_key() const {return block_num;}
 
-            EOSLIB_SERIALIZE(consensus_block, (block_num)(hash)(leader) )
+            EOSLIB_SERIALIZE(cons_block, (block_num)(hash)(leader) )
         };
 
 
 //        typedef multi_index <N(consprogress), consensinfo> consensus_progress;
-        typedef multi_index <N(consensus), consensus_block> consensus_bl_table;
+        typedef multi_index <N(consensus), cons_block> consensus_bl_table;
     };
 
 }
