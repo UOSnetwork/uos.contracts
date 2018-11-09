@@ -99,7 +99,7 @@ namespace UOS{
         void erase(uint64_t number);
 
         //@abi action
-        void makecontorg(const account_name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
+        void setratetran(string name, string value);
 
 ////    } from uos.activity
 
@@ -226,6 +226,28 @@ namespace UOS{
 
         typedef eosio::multi_index<N(rate), rate, indexed_by<N(
                 name_hash), const_mem_fun<rate, key256, &rate::by_name>>> rateIndex;
+
+        ///@abi table ratetr i64
+        struct ratetr {
+            uint64_t key;
+            checksum256 name_hash;
+            string value;
+            string acc_name;
+
+            uint64_t primary_key() const { return key; }
+
+            key256 by_name() const { return get_hash(name_hash); }
+
+            static key256 get_hash(const checksum256 &name) {
+                    const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&name);
+                    return key256::make_from_word_sequence<uint64_t>(p64[0], p64[1], p64[2], p64[3]);
+            }
+
+            EOSLIB_SERIALIZE(ratetr, (key)(name_hash)(value)(acc_name))
+        };
+
+        typedef eosio::multi_index<N(ratetr), ratetr, indexed_by<N(
+                name_hash), const_mem_fun<ratetr, key256, &ratetr::by_name>>> ratetrIndex;
 
 ////        } from uos.activity
 

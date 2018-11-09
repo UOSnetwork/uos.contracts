@@ -364,6 +364,35 @@ namespace UOS{
         }
     }
 
+    void uos_calculator::setratetran(string name, string value) {
+        require_auth(_self);
+        checksum256 result;
+        sha256((char *) name.c_str(), strlen(&name[0]), &result);
+        ratetrIndex ratestr(_self, _self);
+
+        string name_acc = name;
+        auto secondary_index = ratestr.get_index<N(name_hash)>();
+        auto itr = secondary_index.lower_bound(rate::get_hash(result));
+
+        if (itr->acc_name == name_acc) {
+//        secondary_index.erase(itr);//erase should be failed
+            auto iter_rate = ratestr.find(itr->key);
+            eosio_assert(iter_rate != ratestr.end(), "Rate is key not found ");
+
+            ratestr.modify(iter_rate, _self, [&](ratetr &item) {
+                item.value = value;
+            });
+        } else {
+            ratestr.emplace(_self, [&](ratetr &ratetr_item) {
+                ratetr_item.key = ratestr.available_primary_key();
+                ratetr_item.name_hash = result;
+                ratetr_item.value = value;
+                ratetr_item.acc_name = name_acc;
+            });
+        }
+
+    }
+
 //// } from uos.activity
 
 ////    from branch "direct set" {
@@ -417,5 +446,5 @@ namespace UOS{
 ////  }  from branch "direct set"
 
 
-    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setallcalc)(reporthash))
+    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setratetran)(setallcalc)(reporthash))
 }
