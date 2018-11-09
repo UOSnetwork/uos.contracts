@@ -284,32 +284,34 @@ namespace UOS{
 
 ////    } from branch "direct set"
 
-        struct calchash{
-            account_name calc;
-            string hash;
-        };
+//        struct calchash{
+//            account_name calc;
+//            string hash;
+//        };
 
-        /// @abi table consprogress i64
-        struct consensinfo{
-            uint64_t blocknum;
-            vector<calchash> calc_hash_list;
-            vector<calchash> first;
-
-            uint64_t primary_key() const {return blocknum;}
-        };
+//        /// @abi table consprogress i64
+//        struct consensinfo{
+//            uint64_t blocknum;
+//            vector<calchash> calc_hash_list;
+//            vector<calchash> first;
+//
+//            uint64_t primary_key() const {return blocknum;}
+//        };
 
 
         /// @abi table consensus i64
-        struct consensblinf{
-            uint64_t blocknum;
-            account_name calc;
+        struct consensus_block{
+            uint64_t block_num;
             string hash;
-            uint64_t primary_key() const {return blocknum;}
+            account_name leader;
+            uint64_t primary_key() const {return block_num;}
+
+            EOSLIB_SERIALIZE(consensus_block, (block_num)(hash)(leader) )
         };
 
 
-        typedef multi_index <N(consprogress), consensinfo> consensus_progress;
-        typedef multi_index <N(consensus), consensblinf> consensus_bl_table;
+//        typedef multi_index <N(consprogress), consensinfo> consensus_progress;
+        typedef multi_index <N(consensus), consensus_block> consensus_bl_table;
     };
 
 }

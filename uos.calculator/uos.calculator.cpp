@@ -392,14 +392,15 @@ namespace UOS{
     void uos_calculator::reporthash(const account_name acc, string hash, uint64_t block_num, string memo) {
         require_auth(acc);
 
-        consensus_bl_table consensus_block(_self,_self);
-        auto cbitr = consensus_block.find(block_num);
-        eosio_assert(cbitr==consensus_block.end(),"Something wrong - consensus has already been found");
+//        consensus_bl_table consensus_block(_self,_self);
+//        auto cbitr = consensus_block.find(block_num);
+//        eosio_assert(cbitr==consensus_block.end(),"Something wrong - consensus has already been found");
 
         print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "/n");
 
         calcreg_table cr_table(_self, _self);
         reports_table r_table(_self, _self);
+        consensus_bl_table cb_table(_self, _self);
 
         //check acc to be registered as calculator
         auto itp_reg = cr_table.find(acc);
@@ -421,76 +422,115 @@ namespace UOS{
             calc_rep.memo = memo;
         });
 
+        //check if the consensus record already exists
+        if(cb_table.find(block_num) != cb_table.end())
+            return;
 
-        consensus_progress cons_tab(_self,_self);
-        auto citr = cons_tab.find(block_num);
-        if(citr == cons_tab.end()){
-            cons_tab.emplace(_self, [&](consensinfo &item){
-               item.blocknum = block_num;
-               item.first.push_back({acc,hash});
-               for(auto i = cr_table.begin(); i!=cr_table.end(); ++i) {
-                   if(i->owner==acc)
-                       item.calc_hash_list.push_back({acc,hash});
-                   else
-                    item.calc_hash_list.push_back(calchash{i->owner,""});
-               }
+        //count the active calculator accounts
+        int calc_count = 0;
+        for(auto i = cr_table.begin(); i != cr_table.end(); i++)
+            calc_count++;
 
-            });
-        }
-        else{
-            cons_tab.modify(citr,_self,[&](consensinfo &item){
-               bool iscalc = false;
-               for(auto &val : item.calc_hash_list){
-                   if(val.calc==acc){
-                       val.hash = hash;
-                       iscalc = true;
-                       break;
-                   }
-               }
-               if(iscalc) {
-                   bool found = false;
-                   for (auto &val : item.first) {
-                       if (val.hash == hash) {
-                           found = true;
-                           break;
-                       }
-                   }
-                   if (!found) {
-                       item.first.push_back({acc, hash});
-                   }
-               }
-            });
-        }
-        size_t allcalcs = citr->calc_hash_list.size();
-        size_t voted = 0;
-        std::map<string,unsigned int> mhashes;
-        for(auto item : citr->calc_hash_list){
-            if(item.hash.length()>4) {
-                mhashes[item.hash]++;
-                voted++;
+        //count the reports with identical block_num+hash and find the leader
+        int rep_count = 0;
+        int leader_key = -1;
+        account_name leader_name = 0;
+        auto bn_index = r_table.get_index<N(block_num)>();
+        for(auto i = bn_index.find(block_num); i != bn_index.end() && i->block_num == block_num; i++)
+        {
+            if(i->hash != hash)
+                continue;
+
+            rep_count++;
+
+            //we define the leader as an account, who reported the consensus hash first, i.e. who has the lowest key
+            if(leader_key == -1 || (int)i->key < leader_key)
+            {
+                leader_key = (int)i->key;
+                leader_name = i->acc;
             }
         }
-        if((voted*4)>(allcalcs*3)){ //75%
-            print("Check votes");
-            for(auto item : mhashes){
-                if((item.second*4)>(allcalcs*3)){
-                    //consensus
-                    print("Found consensus ", item.first);
 
-                    consensus_block.emplace(_self,[&](consensblinf &citem){
-                        citem.hash = item.first;
-                        citem.blocknum = block_num;
-                        for(auto hashes : citr->first){
-                            if(hashes.hash==item.first){
-                                citem.calc = hashes.calc;
-                                break;
-                            }
-                        }
-                        print("Winner ",citem.calc, " with hash ", citem.hash, " on block ", citem.blocknum);
-                    });
-                }
-            }
+        if(rep_count * 4 > calc_count * 3)
+        {
+            cb_table.emplace(_self, [&](consensus_block &cb_item){
+                cb_item.block_num = block_num;
+                cb_item.hash = hash;
+                cb_item.leader = leader_name;
+            });
         }
+
+
+
+//        consensus_progress cons_tab(_self,_self);
+//        auto citr = cons_tab.find(block_num);
+//        if(citr == cons_tab.end()){
+//            cons_tab.emplace(_self, [&](consensinfo &item){
+//               item.blocknum = block_num;
+//               item.first.push_back({acc,hash});
+//               for(auto i = cr_table.begin(); i!=cr_table.end(); ++i) {
+//                   if(i->owner==acc)
+//                       item.calc_hash_list.push_back({acc,hash});
+//                   else
+//                    item.calc_hash_list.push_back(calchash{i->owner,""});
+//               }
+//
+//            });
+//        }
+//        else{
+//            cons_tab.modify(citr,_self,[&](consensinfo &item){
+//               bool iscalc = false;
+//               for(auto &val : item.calc_hash_list){
+//                   if(val.calc==acc){
+//                       val.hash = hash;
+//                       iscalc = true;
+//                       break;
+//                   }
+//               }
+//               if(iscalc) {
+//                   bool found = false;
+//                   for (auto &val : item.first) {
+//                       if (val.hash == hash) {
+//                           found = true;
+//                           break;
+//                       }
+//                   }
+//                   if (!found) {
+//                       item.first.push_back({acc, hash});
+//                   }
+//               }
+//            });
+//        }
+//        size_t allcalcs = citr->calc_hash_list.size();
+//        size_t voted = 0;
+//        std::map<string,unsigned int> mhashes;
+//        for(auto item : citr->calc_hash_list){
+//            if(item.hash.length()>4) {
+//                mhashes[item.hash]++;
+//                voted++;
+//            }
+//        }
+//        if((voted*4)>(allcalcs*3)){ //75%
+//            print("Check votes");
+//            for(auto item : mhashes){
+//                if((item.second*4)>(allcalcs*3)){
+//                    //consensus
+//                    print("Found consensus ", item.first);
+//
+//                    consensus_block.emplace(_self,[&](consensblinf &citem){
+//                        citem.hash = item.first;
+//                        citem.blocknum = block_num;
+//                        for(auto hashes : citr->first){
+//                            if(hashes.hash==item.first){
+//                                citem.calc = hashes.calc;
+//                                break;
+//                            }
+//                        }
+//                        print("Winner ",citem.calc, " with hash ", citem.hash, " on block ", citem.blocknum);
+//                    });
+//                }
+//            }
+//        }
 
     }
 
