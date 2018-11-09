@@ -396,7 +396,7 @@ namespace UOS{
 //        auto cbitr = consensus_block.find(block_num);
 //        eosio_assert(cbitr==consensus_block.end(),"Something wrong - consensus has already been found");
 
-        print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "/n");
+        print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "\n");
 
         calcreg_table cr_table(_self, _self);
         reports_table r_table(_self, _self);
@@ -410,9 +410,9 @@ namespace UOS{
         auto ab_index = r_table.get_index<N(acc_block)>();
         auto ab_hash = calc_reports::get_acc_block_hash(acc, block_num);
         auto itr_rep = ab_index.find(ab_hash);
-        //eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
-        if(itr_rep != ab_index.end())
-            r_table.erase(*itr_rep);
+        eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
+//        if(itr_rep != ab_index.end())
+//            r_table.erase(*itr_rep);
 
         r_table.emplace(_self, [&](calc_reports &calc_rep) {
             calc_rep.key = r_table.available_primary_key();
