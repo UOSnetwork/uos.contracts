@@ -391,6 +391,11 @@ namespace UOS{
 
     void uos_calculator::reporthash(const account_name acc, string hash, uint64_t block_num, string memo) {
         require_auth(acc);
+
+        consensus_bl_table consensus_block(_self,_self);
+        auto cbitr = consensus_block.find(block_num);
+        eosio_assert(cbitr==consensus_block.end(),"Something wrong - consensus has already been found");
+
         print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "/n");
 
         calcreg_table cr_table(_self, _self);
@@ -434,21 +439,25 @@ namespace UOS{
         }
         else{
             cons_tab.modify(citr,_self,[&](consensinfo &item){
+               bool iscalc = false;
                for(auto &val : item.calc_hash_list){
                    if(val.calc==acc){
                        val.hash = hash;
+                       iscalc = true;
                        break;
                    }
                }
-               bool found = false;
-               for(auto &val : item.first){
-                   if(val.hash==hash) {
-                       found = true;
-                       break;
+               if(iscalc) {
+                   bool found = false;
+                   for (auto &val : item.first) {
+                       if (val.hash == hash) {
+                           found = true;
+                           break;
+                       }
                    }
-               }
-               if(!found){
-                   item.first.push_back({acc,hash});
+                   if (!found) {
+                       item.first.push_back({acc, hash});
+                   }
                }
             });
         }
@@ -467,9 +476,7 @@ namespace UOS{
                 if((item.second*4)>(allcalcs*3)){
                     //consensus
                     print("Found consensus ", item.first);
-                    consensus_bl_table consensus_block(_self,_self);
-                    auto cbitr = consensus_block.find(block_num);
-                    eosio_assert(cbitr==consensus_block.end(),"Something wrong");
+
                     consensus_block.emplace(_self,[&](consensblinf &citem){
                         citem.hash = item.first;
                         citem.blocknum = block_num;
