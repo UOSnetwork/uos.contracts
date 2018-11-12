@@ -290,12 +290,16 @@ namespace UOS{
             string hash;
             account_name leader;
             uint64_t primary_key() const {return block_num;}
+            uint64_t reverse_key() const {return ~block_num;}
 
             EOSLIB_SERIALIZE(cons_block, (block_num)(hash)(leader) )
         };
 
 
-        typedef multi_index <N(consensus), cons_block> consensus_bl_table;
+        typedef multi_index <
+                N(consensus), cons_block
+                ,indexed_by<N(reverse), const_mem_fun<cons_block, uint_fast64_t, &cons_block::reverse_key>>
+        > consensus_bl_table;
     };
 
 }
