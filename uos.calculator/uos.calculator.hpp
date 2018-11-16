@@ -29,35 +29,35 @@ namespace UOS{
                 }
         }
 
-        //@abi action
+        /// @abi action
         void regcalc(const account_name acc, const eosio::public_key& key, const string& url, uint16_t location);
         //void regcalc(const account_name acc, );
 
-        //@abi action
+        /// @abi action
         void rmcalc(const account_name acc);
 
-        //@abi action
+        /// @abi action
         void unregcalc(const account_name acc);
 
-        //@abi action
+        /// @abi action
         void iscalc(const account_name acc);                    //check if account is allowed to calculate activity index. It will use assert. May be add statistics for calculators?
 
-        //@abi action
+        /// @abi action
         void stake(const account_name voter, const asset value);  //transfer money to stake account
 
-        //@abi action
+        /// @abi action
         void refund(const account_name voter);                    //todo: transfer money back from stake account +
 
-        //@abi action
+        /// @abi action
         void votecalc(const account_name voter, std::vector<account_name> calcs);
 
-        //@abi action
+        /// @abi action
         void unvote(const account_name voter, std::vector<account_name> calcs);
 
-        //@abi action
+        /// @abi action
         void unvoteall(const account_name voter);
 
-        //@abi action
+        /// @abi action
         void setasset(const asset value);                       //todo +-
 
         bool check_calc(const account_name calc);
@@ -67,27 +67,27 @@ namespace UOS{
 
 ////    from uos.accounter {
 
-        //@abi action
+        /// @abi action
         void withdrawal(account_name owner);
 
-        //@abi action
+        /// @abi action
         void withdraw(account_name owner, double sum);
 
         ////sender operations
-        //@abi action
+        /// @abi action
         void addsum(account_name issuer, account_name receiver, double sum, string message);
 
-        //@abi action
+        /// @abi action
         void regissuer(account_name issuer);
 
 ////    } from uos.accounter
 
 ////    from uos.activity {
 
-        //@abi action
+        /// @abi action
         void setrate(string name, string value);
 
-        //@abi action
+        /// @abi action
         void eraserate(uint64_t index);
 
         /**
@@ -95,20 +95,22 @@ namespace UOS{
          * @param number
          */
 
-        //@abi action
+        /// @abi action
         void erase(uint64_t number);
 
         //@abi action
         void setratetran(string name, string value);
+        /// @abi action
+        void makecontorg(const account_name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
 
 ////    } from uos.activity
 
 ////    from branch "direct set" {
 
-        //@abi action
+        /// @abi action
         void setallcalc(vector<account_name> accounts);
 
-        //@abi action
+        /// @abi action
         void reporthash(const account_name acc, string hash, uint64_t block_num, string memo);
 
 ////    } from branch "direct set"
@@ -119,14 +121,14 @@ namespace UOS{
         //  calc_info is modified producer_info
 
 
-        //@abi table state i64
+        /// @abi table state i64
         struct contract_state{
             asset base_asset;
             account_name fund_name;
             //todo
         };
 
-        //@abi table calcs i64
+        /// @abi table calcs i64
         struct calc_info{
             account_name          owner;
             uint64_t              total_votes = 0;
@@ -148,7 +150,7 @@ namespace UOS{
             int64_t bid;
         };
 
-        //@abi table voters i64
+        /// @abi table voters i64
         struct voter_info{
             account_name owner=0;
             std::vector<candidate_info> calcs;
@@ -175,7 +177,7 @@ namespace UOS{
 
 ////         from uos.accounter {
 
-        //@abi table account i64
+        /// @abi table account i64
         struct account_info{
             account_name owner;
             double account_sum;
@@ -185,7 +187,7 @@ namespace UOS{
             EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
         };
 
-        //@abi table issuers i64
+        /// @abi table issuers i64
         struct issuer_info{
             account_name issuer;
 
@@ -205,7 +207,7 @@ namespace UOS{
 ////         from uos.activity {
 
 
-        ///@abi table rate i64
+        /// @abi table rate i64
         struct rate {
             uint64_t key;
             checksum256 name_hash;
@@ -254,7 +256,7 @@ namespace UOS{
 
 ////    from branch "direct set" {
 
-        //@abi table calcreg i64
+        /// @abi table calcreg i64
         struct calc_register{
             account_name owner;
 
@@ -265,7 +267,7 @@ namespace UOS{
 
         typedef multi_index <N(calcreg), calc_register> calcreg_table;
 
-        //@abi table reports i64
+        /// @abi table reports i64
         struct calc_reports{
             uint64_t key;
             account_name acc;
@@ -305,6 +307,23 @@ namespace UOS{
         > reports_table;
 
 ////    } from branch "direct set"
+
+        /// @abi table consensus i64
+        struct cons_block{
+            uint64_t block_num;
+            string hash;
+            account_name leader;
+            uint64_t primary_key() const {return block_num;}
+            uint64_t reverse_key() const {return ~block_num;}
+
+            EOSLIB_SERIALIZE(cons_block, (block_num)(hash)(leader) )
+        };
+
+
+        typedef multi_index <
+                N(consensus), cons_block
+                ,indexed_by<N(reverse), const_mem_fun<cons_block, uint_fast64_t, &cons_block::reverse_key>>
+        > consensus_bl_table;
     };
 
 }

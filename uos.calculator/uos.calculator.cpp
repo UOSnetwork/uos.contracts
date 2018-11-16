@@ -1,5 +1,6 @@
 
 #include <eosio.token/eosio.token.hpp>
+#include <map>
 #include "uos.calculator.hpp"
 
 namespace UOS{
@@ -419,13 +420,15 @@ namespace UOS{
 
     void uos_calculator::reporthash(const account_name acc, string hash, uint64_t block_num, string memo) {
         require_auth(acc);
-        print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "/n");
+
+        print("reporthash  acc = ", name{acc}, " hash = ", hash, " block_num = ", (int)block_num, " memo = ", memo, "\n");
 
         calcreg_table cr_table(_self, _self);
         reports_table r_table(_self, _self);
+        consensus_bl_table cb_table(_self, _self);
 
         //check acc to be registered as calculator
-        auto itp_reg = cr_table.find(name{acc});
+        auto itp_reg = cr_table.find(acc);
         eosio_assert(itp_reg != cr_table.end(), "account is not a registered calculator");
 
         //check for the report with the same acc + block_num
@@ -434,13 +437,51 @@ namespace UOS{
         auto itr_rep = ab_index.find(ab_hash);
         eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
 
-        r_table.emplace(_self, [&](auto &calc_rep) {
+        r_table.emplace(_self, [&](calc_reports &calc_rep) {
             calc_rep.key = r_table.available_primary_key();
             calc_rep.acc = acc;
             calc_rep.hash = hash;
             calc_rep.block_num = block_num;
             calc_rep.memo = memo;
         });
+
+        //check if the consensus record already exists
+        if(cb_table.find(block_num) != cb_table.end())
+            return;
+
+        //count the active calculator accounts
+        int calc_count = 0;
+        for(auto i = cr_table.begin(); i != cr_table.end(); i++)
+            calc_count++;
+
+        //count the reports with identical block_num+hash and find the leader
+        int rep_count = 0;
+        int leader_key = -1;
+        account_name leader_name = 0;
+        auto bn_index = r_table.get_index<N(block_num)>();
+        for(auto i = bn_index.find(block_num); i != bn_index.end() && i->block_num == block_num; i++)
+        {
+            if(i->hash != hash)
+                continue;
+
+            rep_count++;
+
+            //we define the leader as an account, who reported the consensus hash first, i.e. who has the lowest key
+            if(leader_key == -1 || (int)i->key < leader_key)
+            {
+                leader_key = (int)i->key;
+                leader_name = i->acc;
+            }
+        }
+
+        if(rep_count * 4 > calc_count * 3)
+        {
+            cb_table.emplace(_self, [&](cons_block &cb_item){
+                cb_item.block_num = block_num;
+                cb_item.hash = hash;
+                cb_item.leader = leader_name;
+            });
+        }
     }
 
 ////  }  from branch "direct set"
