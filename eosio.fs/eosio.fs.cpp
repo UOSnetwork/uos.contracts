@@ -152,6 +152,7 @@ namespace uos{
         auto user_itr = fstab.find(accname);
         eosio_assert(user_itr!=fstab.end(),"user information not found");
         eosio_assert((user_itr->fs_allocated_space-user_itr->fs_in_use)>=amount_bytes,"not enough allocated space");
+        eosio_assert(lot_itr->owner==accname,"you must be owner of this lot");
     }
     
     void eosio_fs::freeused(const account_name fsacc, const account_name acc, uint64_t amount_bytes) {
