@@ -175,7 +175,7 @@ namespace uos{
 
 
 
-    EOSIO_ABI(eosio_fs,(sellfs)(buyfs)(getbackfs)(addspace)(savekeyrsa)(changealloc)(addused)(freeused))
+    EOSIO_ABI(eosio_fs,(sellfs)(buyfs)(getbackfs)(addspace)(savekeyrsa)(changealloc)(addused)(freeused)(getstats))
 
 }
 
