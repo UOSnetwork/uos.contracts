@@ -207,10 +207,7 @@ namespace UOS{
         eosio_assert((_state.get().base_asset.symbol)!=(value.symbol),"Nothing to change");
         //todo check if there is someone's stake, then..
     }
-
     
-    
-//// from uos.accounter {
 
     void uos_calculator::withdrawal(account_name owner) {
         require_auth(owner);
@@ -303,10 +300,6 @@ namespace UOS{
         auto iss_itr = isstable.find(acc);
         return iss_itr!=isstable.end();
     }
-    
-//// } from uos.accounter
-
-//// { from uos.activity
 
     void uos_calculator::setrate(string name, string value) {
         require_auth(_self);
@@ -357,7 +350,6 @@ namespace UOS{
                 if (rates.begin() != rates.end()) {
                     rates.erase(rates.begin());
                 } else {
-                    //print("empty");
                     break;
                 }
             }
@@ -393,10 +385,6 @@ namespace UOS{
         }
 
     }
-
-//// } from uos.activity
-
-////    from branch "direct set" {
 
     void uos_calculator::setallcalc(std::vector<account_name> accounts) {
         require_auth(_self);
@@ -483,9 +471,6 @@ namespace UOS{
             });
         }
     }
-
-////  }  from branch "direct set"
-
 
     EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setratetran)(setallcalc)(reporthash))
 }
