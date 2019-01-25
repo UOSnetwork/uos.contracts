@@ -50,6 +50,8 @@ namespace UOS {
         //@abi action
         void makecontorg(const account_name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
 
+        //@abi action
+        void socialaction(const account_name acc,string action_json);
 
     private:
 

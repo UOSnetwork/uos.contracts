@@ -100,6 +100,12 @@ namespace UOS {
         }
    }
 
-    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg)(dirpost)(dirpostorg))
+   void uos_activity::socialaction(const account_name acc, string action_json)
+   {
+       require_auth( acc );
+   }
+
+
+    EOSIO_ABI(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg)(dirpost)(dirpostorg)(socialaction))
 
 }
