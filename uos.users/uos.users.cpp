@@ -1,7 +1,3 @@
-//
-// Created by anton on 11.07.18.
-//
-
 #include "uos.users.hpp"
 
 namespace UOS {

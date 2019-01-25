@@ -1,6 +1,11 @@
+/**
+ * @brief contarcts for write attribute users (extended)
+ *
+ *
+ */
+
+
 #pragma once
-
-
 #include <eosiolib/asset.hpp>
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/stdlib.hpp>
