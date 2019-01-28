@@ -150,6 +150,8 @@ namespace uos{
         require_auth(accname);
         userfs_table fstab(_self,accname);
         auto user_itr = fstab.find(accname);
+        if(user_itr->fs_in_use>amount_bytes)
+            amount_bytes=user_itr->fs_in_use;
         eosio_assert(user_itr!=fstab.end(),"user information not found");
         eosio_assert((user_itr->fs_allocated_space-user_itr->fs_in_use)>=amount_bytes,"not enough allocated space");
         eosio_assert(lot_itr->owner==accname,"you must be owner of this lot");
