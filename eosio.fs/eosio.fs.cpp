@@ -157,6 +157,8 @@ namespace uos{
         eosio_assert(lot_itr->owner==accname,"you must be owner of this lot");
         fstab.modify(user_itr,acc,[&](userfs_info &item){
                 item.fs_in_use+=amount_bytes;
+        if(tmp>user_itr->fs_allocated_space)
+                tmp = user_itr->fs_allocated_space;
     }
     
     void eosio_fs::freeused(const account_name fsacc, const account_name acc, uint64_t amount_bytes) {
