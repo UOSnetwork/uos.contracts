@@ -159,6 +159,8 @@ namespace uos{
                 item.fs_in_use+=amount_bytes;
         if(tmp>user_itr->fs_allocated_space)
                 tmp = user_itr->fs_allocated_space;
+        INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
+        print("get stats");
     }
     
     void eosio_fs::freeused(const account_name fsacc, const account_name acc, uint64_t amount_bytes) {
