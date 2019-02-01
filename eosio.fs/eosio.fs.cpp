@@ -148,6 +148,7 @@ namespace uos{
 
    void eosio_fs::getstats(const account_name accname) {
         require_auth(accname);
+        eosio_assert(price.symbol == CORE_SYMBOL,"not valud currency");
         userfs_table fstab(_self,accname);
         auto user_itr = fstab.find(accname);
         if(user_itr->fs_in_use>amount_bytes)
