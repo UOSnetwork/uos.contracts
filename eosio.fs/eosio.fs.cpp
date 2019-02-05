@@ -162,6 +162,13 @@ namespace uos{
                 item.fs_in_use+=amount_bytes;
         if(tmp>user_itr->fs_allocated_space)
                 tmp = user_itr->fs_allocated_space;
+        if(fsacc!=_self){
+           INLINE_ACTION_SENDER(eosio_fs,addused)(_self,{_self,N(active)},{_self,acc,amount_bytes});
+        }
+        else{
+            fstab.modify(user_itr,acc,[&](userfs_info &item){
+                item.fs_in_use+=amount_bytes;
+            });
         INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
         print("get stats");
     }
