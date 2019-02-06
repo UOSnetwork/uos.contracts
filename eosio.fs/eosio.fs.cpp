@@ -147,6 +147,11 @@ namespace uos{
     }
 
    void eosio_fs::getstats(const account_name accname) {
+        auto user_itr = fstab.find(owner);
+        eosio_assert(user_itr != fstab.end(), "you should buy a free space firstly");
+        fstab.modify(user_itr,owner,[&](userfs_info &item){
+            item.rsa_open_key=key;
+        });
         userfs_table fstab(_self,acc);
         auto itr = fstab.find(acc);
         require_auth(accname);
