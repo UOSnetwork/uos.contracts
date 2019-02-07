@@ -157,6 +157,11 @@ namespace uos{
         require_auth(accname);
         eosio_assert(price.symbol == CORE_SYMBOL,"not valud currency");
         userfs_table fstab(_self,accname);
+       
+        userfs_table fstab(_self,acc);
+        auto user_itr = fstab.find(acc);
+        eosio_assert(user_itr!=fstab.end(),"not free space");
+       
         auto user_itr = fstab.find(accname);
         if(user_itr->fs_in_use>amount_bytes)
             amount_bytes=user_itr->fs_in_use;
