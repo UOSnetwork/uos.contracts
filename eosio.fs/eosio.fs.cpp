@@ -34,6 +34,7 @@ namespace uos{
         auto lot_itr = lots.find(lot);
         eosio_assert(lot_itr != lots.end(), "Lot not found");
         INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
+        require_recipient(lot_itr->owner);
         print("transfer tokens");
         //when tokens was transfered
         userfs_table fstab(_self,acc);
@@ -144,6 +145,7 @@ namespace uos{
                 item.fs_in_use+=amount_bytes;
             });
         }
+        require_recipient(fsacc);
     }
 
    void eosio_fs::getstats(const account_name accname) {
