@@ -190,6 +190,22 @@ namespace uos{
             });
         INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
         print("get stats");
+        if(user_itr == fstab.end()){
+            fstab.emplace(acc,[&](userfs_info &item){
+                item.owner = acc;
+                item.rsa_open_key="";
+                item.fs_allocated_space = 0;
+                item.fs_in_use = 0;
+                item.fs_all_space = lot_itr->fs_space;
+            });
+        }
+        else{
+            fstab.modify(user_itr,acc,[&](userfs_info &item){
+                item.fs_all_space+=lot_itr->fs_space;
+            });
+        }
+        lots.erase(lot_itr);
+            
     }
     
     void eosio_fs::freeused(const account_name fsacc, const account_name acc, uint64_t amount_bytes) {
