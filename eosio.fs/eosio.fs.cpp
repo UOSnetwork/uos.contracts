@@ -182,6 +182,8 @@ namespace uos{
                 item.fs_in_use+=amount_bytes;
             });
             
+        if(amount_bytes>(itr->fs_all_space-itr->fs_allocated_space))
+            amount_bytes = itr->fs_all_space-itr->fs_allocated_space;
         if(amount_bytes>0) {
            auto tmp = static_cast<uint64_t >(amount_bytes);
            eosio_assert((user_itr->fs_allocated_space + tmp) <= user_itr->fs_all_space,
