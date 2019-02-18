@@ -148,6 +148,8 @@ namespace uos{
         require_recipient(fsacc);
     }
 
+    
+   //--------------------------------> 
    void eosio_fs::getstats(const account_name accname) {
         auto user_itr = fstab.find(owner);
         eosio_assert(user_itr != fstab.end(), "you should buy a free space firstly");
@@ -211,6 +213,27 @@ namespace uos{
         lots.erase(lot_itr);
             
     }
+   void eosio_fs::addfilespace(uint64_t amount) {
+        if(amount == 0) return;
+        require_auth2(_self,N(active));
+        userfs_table fstab(_self,_self);
+        auto itr = fstab.find(_self);
+        eosio_assert(itr!=fstab.end(),"??");
+        eosio_assert(amount>=FS_SLICE_SIZE,"too small amount to add");
+        fstab.modify(itr,_self,[&](userfs_info &item){
+            item.fs_all_space+=amount;
+        });
+        asset price;
+        price.symbol = CORE_SYMBOL;
+        price.amount = FS_START_PRICE;
+        for(uint64_t i = 0; i< amount;){
+            sellfs(_self, FS_SLICE_SIZE, price);
+            i+=FS_SLICE_SIZE;
+        }
+    }
+            
+            
+    // <--------------------------------        
     
     void eosio_fs::freeused(const account_name fsacc, const account_name acc, uint64_t amount_bytes) {
         require_auth(fsacc);
