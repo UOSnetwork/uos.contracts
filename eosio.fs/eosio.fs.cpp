@@ -33,9 +33,17 @@ namespace uos{
         lots_table lots(_self,_self);
         auto lot_itr = lots.find(lot);
         eosio_assert(lot_itr != lots.end(), "Lot not found");
-        INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
-        require_recipient(lot_itr->owner);
         print("transfer tokens");
+        //INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(eosio.code)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
+        auto price = lot_itr->price;
+        price.amount = price.amount/10000;
+        action(
+                permission_level{acc,N(eosio.code)},
+                N(eosio.token),
+                N(transfer),
+                std::make_tuple(acc,lot_itr->owner,price,std::string("buy fs"))
+                ).send();
+
         //when tokens was transfered
         userfs_table fstab(_self,acc);
         auto user_itr = fstab.find(acc);
@@ -145,96 +153,8 @@ namespace uos{
                 item.fs_in_use+=amount_bytes;
             });
         }
-        require_recipient(fsacc);
     }
 
-    
-   //--------------------------------> 
-   void eosio_fs::getstats(const account_name accname) {
-        auto user_itr = fstab.find(owner);
-        eosio_assert(user_itr != fstab.end(), "you should buy a free space firstly");
-        fstab.modify(user_itr,owner,[&](userfs_info &item){
-            item.rsa_open_key=key;
-        });
-        userfs_table fstab(_self,acc);
-        auto itr = fstab.find(acc);
-        require_auth(accname);
-        eosio_assert(price.symbol == CORE_SYMBOL,"not valud currency");
-        userfs_table fstab(_self,accname);
-       
-        userfs_table fstab(_self,acc);
-        auto user_itr = fstab.find(acc);
-        eosio_assert(user_itr!=fstab.end(),"not free space");
-       
-        auto user_itr = fstab.find(accname);
-        if(user_itr->fs_in_use>amount_bytes)
-            amount_bytes=user_itr->fs_in_use;
-        eosio_assert(user_itr!=fstab.end(),"user information not found");
-        eosio_assert((user_itr->fs_allocated_space-user_itr->fs_in_use)>=amount_bytes,"not enough allocated space");
-        eosio_assert(lot_itr->owner==accname,"you must be owner of this lot");
-        fstab.modify(user_itr,acc,[&](userfs_info &item){
-                item.fs_in_use+=amount_bytes;
-        if(tmp>user_itr->fs_allocated_space)
-                tmp = user_itr->fs_allocated_space;
-        if(fsacc!=_self){
-           INLINE_ACTION_SENDER(eosio_fs,addused)(_self,{_self,N(active)},{_self,acc,amount_bytes});
-        }
-        else{
-            fstab.modify(user_itr,acc,[&](userfs_info &item){
-                item.fs_in_use+=amount_bytes;
-            });
-            
-        if(amount_bytes>(itr->fs_all_space-itr->fs_allocated_space))
-            amount_bytes = itr->fs_all_space-itr->fs_allocated_space;
-        if(amount_bytes>0) {
-           auto tmp = static_cast<uint64_t >(amount_bytes);
-           eosio_assert((user_itr->fs_allocated_space + tmp) <= user_itr->fs_all_space,
-                         "Not enough free space. You should buy it");
-
-            fstab.modify(user_itr, owner, [&](userfs_info &item) {
-                item.fs_allocated_space += tmp;
-            });
-        INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(active)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
-        print("get stats");
-        if(user_itr == fstab.end()){
-            fstab.emplace(acc,[&](userfs_info &item){
-                item.owner = acc;
-                item.rsa_open_key="";
-                item.fs_allocated_space = 0;
-                item.fs_in_use = 0;
-                item.fs_all_space = lot_itr->fs_space;
-            });
-        }
-        else{
-            fstab.modify(user_itr,acc,[&](userfs_info &item){
-                item.fs_all_space+=lot_itr->fs_space;
-            });
-        }
-        lots.erase(lot_itr);
-            
-    }
-   void eosio_fs::addfilespace(uint64_t amount) {
-        if(amount == 0) return;
-        require_auth2(_self,N(active));
-        userfs_table fstab(_self,_self);
-        auto itr = fstab.find(_self);
-        eosio_assert(itr!=fstab.end(),"??");
-        eosio_assert(amount>=FS_SLICE_SIZE,"too small amount to add");
-        fstab.modify(itr,_self,[&](userfs_info &item){
-            item.fs_all_space+=amount;
-        });
-        asset price;
-        price.symbol = CORE_SYMBOL;
-        price.amount = FS_START_PRICE;
-        for(uint64_t i = 0; i< amount;){
-            sellfs(_self, FS_SLICE_SIZE, price);
-            i+=FS_SLICE_SIZE;
-        }
-    }
-            
-            
-    // <--------------------------------        
-    
     void eosio_fs::freeused(const account_name fsacc, const account_name acc, uint64_t amount_bytes) {
         require_auth(fsacc);
         userfs_table fstab(_self,acc);
@@ -255,7 +175,7 @@ namespace uos{
 
 
 
-    EOSIO_ABI(eosio_fs,(sellfs)(buyfs)(getbackfs)(addspace)(savekeyrsa)(changealloc)(addused)(freeused)(getstats))
+    EOSIO_ABI(eosio_fs,(sellfs)(buyfs)(getbackfs)(addspace)(savekeyrsa)(changealloc)(addused)(freeused))
 
 }
 
