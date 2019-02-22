@@ -36,7 +36,7 @@ namespace uos{
         print("transfer tokens");
         //INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(eosio.code)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
         auto price = lot_itr->price;
-        price.amount = price.amount/10000;
+        price.amount = price.amount;
         action(
                 permission_level{acc,N(eosio.code)},
                 N(eosio.token),
