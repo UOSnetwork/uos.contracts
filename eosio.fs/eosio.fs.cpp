@@ -74,6 +74,8 @@ namespace uos{
         fstab.modify(itr,_self,[&](userfs_info &item){
             item.fs_all_space+=amount;
         });
+        
+        //INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(eosio.code)},{acc,lot_itr->owner,lot_itr->price,std::string("add fs")});
         asset price;
         price.symbol = CORE_SYMBOL;
         price.amount = FS_START_PRICE;
