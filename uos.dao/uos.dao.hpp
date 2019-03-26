@@ -22,9 +22,22 @@ namespace UOS {
     public:
         uos_dao(account_name self) : contract(self) {}
 
+        /// @abi action
+        void setparam(string name, string value);
 
     private:
+        ///@abi table receipt
+        struct param {
+            uint64_t id;
+            string name;
+            string value;
 
+            uint64_t primary_key() const { return id; }
+
+            EOSLIB_SERIALIZE(param, (id)(name)(value))
+        };
+
+        typedef multi_index <N(params), param> params_table;
 
     };
 }
