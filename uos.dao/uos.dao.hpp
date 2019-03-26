@@ -26,7 +26,7 @@ namespace UOS {
         void setparam(string name, string value);
 
     private:
-        ///@abi table receipt
+        ///@abi table params
         struct param {
             uint64_t id;
             string name;

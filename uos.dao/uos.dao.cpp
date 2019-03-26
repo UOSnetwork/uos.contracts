@@ -11,7 +11,7 @@ namespace UOS {
         for(; itr != p_table.end(); itr++){
             print("PARAM ", itr->name, " ", itr->value, "\n");
             if(itr->name == name) {
-                print("FOUND");
+                print("FOUND\n");
                 break;
             }
         }
