@@ -1,8 +1,10 @@
-file(GLOB ABI_FILES "*.abi")
-configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+add_contract(eosio.fs eosio.fs ${CMAKE_CURRENT_SOURCE_DIR}/eosio.fs.cpp)
 
-add_wast_executable(TARGET eosio.fs
-  INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}"
-  LIBRARIES libc libc++ eosiolib eosio.token
-  DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(eosio.fs
+   PUBLIC
+   ${CMAKE_CURRENT_SOURCE_DIR}/
+   ${CMAKE_CURRENT_SOURCE_DIR}/../../eosio.token/include)
+
+set_target_properties(eosio.fs
+   PROPERTIES
+   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
