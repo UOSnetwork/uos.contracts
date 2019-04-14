@@ -119,7 +119,6 @@ namespace uos{
         using changealloc_action = eosio::action_wrapper<"changealloc"_n, &eosio_fs::changealloc>;
         using addused_action     = eosio::action_wrapper<"addused"_n,     &eosio_fs::addused>;
 
-
     };
 }
 
