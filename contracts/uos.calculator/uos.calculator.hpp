@@ -1,8 +1,8 @@
 
 #pragma once
 
-
-#include <eosiolib/eosio.hpp>
+//#include <eosiolib/native/eosio/intrinsics_def.hpp>
+//#include <eosiolib/eosio.hpp>
 #include <eosiolib/print.hpp>
 #include <eosiolib/crypto.hpp>
 #include <eosiolib/public_key.hpp>
@@ -13,6 +13,7 @@
 #include <eosiolib/symbol.hpp>
 #include <eosiolib/action.hpp>
 #include <eosiolib/fixed_bytes.hpp>
+
 #include <string>
 #include <cstdint>
 #include <vector>
@@ -29,12 +30,12 @@ namespace UOS{
     class [[eosio::contract("uos.calculator")]]uos_calculator: public contract {
     public:
         uos_calculator(name receiver, name code, datastream<const char*> ds)
-                : contract(receiver, code, ds) , s_state(code,receiver.value){
-                if(!s_state.exists()){
+                : contract(receiver, code, ds) , _state(code,receiver.value){
+                if(!_state.exists()){
                         contract_state temp;
                         temp.base_asset = asset();
                         temp.fund_name = "uos.stake"_n;
-                        s_state.set(temp,_self.value);
+                        _state.set(temp,_self.value);
                 }
         }
 
@@ -181,7 +182,7 @@ namespace UOS{
         typedef singleton <"state"_n, contract_state> contract_state_singleton;
 
 
-        contract_state_singleton  s_state;
+        contract_state_singleton  _state;
 
         bool unvote_vector(voters_table &voters, voters_table::const_iterator &itr, const name &voter, std::vector<name> &calcs_to_unvote);
 
@@ -247,7 +248,7 @@ namespace UOS{
 
             uint64_t primary_key() const { return key; }
 
-            sha256 by_name() const { return get_hash(name_hash); }
+            checksum256 by_name() const { return get_hash(name_hash); }
 
             static key256 get_hash(const checksum256 &name) {
                     const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&name);
@@ -257,7 +258,7 @@ namespace UOS{
             EOSLIB_SERIALIZE(ratetr, (key)(name_hash)(value)(acc_name))
         };
 
-        typedef eosio::multi_index < "ratetr"_n, ratetr, indexed_by < "name.hash"_n, const_mem_fun < ratetr, key256, &ratetr::by_name > > > ratetrIndex;
+        typedef eosio::multi_index < name{"ratetr"}, ratetr, indexed_by < name{"name.hash"}, const_mem_fun < ratetr, key256, &ratetr::by_name > > > ratetrIndex;
 
 ////        } from uos.activity
 
@@ -268,7 +269,7 @@ namespace UOS{
         struct calc_register{
             name owner;
 
-            uint64_t primary_key() const { return owner; }
+            uint64_t primary_key() const { return owner.value; }
 
             EOSLIB_SERIALIZE( calc_register, (owner))
         };
@@ -291,7 +292,7 @@ namespace UOS{
                 string concat = name{_acc}.to_string() + ";" + uint64_t_to_string((unsigned long)_block_num);
                 print("acc;block_num concatenation |",concat ,"|\n");
                 checksum256 checksum_result;
-                sha256((char *) concat.c_str(), strlen(&concat[0]), &checksum_result);
+                checksum_result = sha256((char *) concat.c_str(), strlen(&concat[0]));
                 const uint64_t *p64 = reinterpret_cast<const uint64_t *>(&checksum_result);
                 key256 key256_result =  key256::make_from_word_sequence<uint64_t>(p64[0], p64[1], p64[2], p64[3]);
                 return  key256_result;
