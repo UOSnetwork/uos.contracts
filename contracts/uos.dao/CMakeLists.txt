@@ -1,10 +1,9 @@
-file(GLOB ABI_FILES "*.abi")
-configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+add_contract(uos.dao uos.dao uos.dao.cpp)
 
- # set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2 -g3" )
-
-add_wast_executable(TARGET uos.dao
-        INCLUDE_FOLDERS ${STANDARD_INCLUDE_FOLDERS}
-        LIBRARIES libc libc++ eosiolib
-        DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
+target_include_directories(uos.dao
+        PUBLIC
         )
+
+set_target_properties(uos.dao
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")

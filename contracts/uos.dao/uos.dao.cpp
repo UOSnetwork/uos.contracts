@@ -5,7 +5,7 @@ namespace UOS {
         print("NAME ", name, '\n');
         print("VALUE ", value, '\n');
 
-        params_table p_table(_self, _self);
+        params_table p_table(_self, _self.value);
 
         auto itr = p_table.begin();
         for(; itr != p_table.end(); itr++){
@@ -31,6 +31,6 @@ namespace UOS {
         }
     }
 
-    EOSIO_ABI( uos_dao, (setparam))
+    EOSIO_DISPATCH( uos_dao, (setparam))
 
 }
