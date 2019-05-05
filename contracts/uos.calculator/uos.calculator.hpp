@@ -25,7 +25,7 @@
 namespace UOS{
     using namespace eosio;
     using std::string;
-    using key256=fixed_bytes<256>;
+    using key256=fixed_bytes<32>;
 
     class [[eosio::contract("uos.calculator")]]uos_calculator: public contract {
     public:
@@ -35,7 +35,7 @@ namespace UOS{
                         contract_state temp;
                         temp.base_asset = asset();
                         temp.fund_name = "uos.stake"_n;
-                        _state.set(temp,_self.value);
+                        _state.set(temp,_self);
                 }
         }
 
@@ -132,15 +132,17 @@ namespace UOS{
         //  calc_info is modified producer_info
 
 
-        [[eosio::table]]
-        struct contract_state{
+
+        struct  [[eosio::table]]
+        contract_state{
             asset base_asset;
             name fund_name;
             //todo
         };
 
-        [[eosio::table]]
-        struct calc_info{
+
+        struct  [[eosio::table]]
+        calc_info{
             name                  owner;
             uint64_t              total_votes = 0;
             eosio::public_key     calc_key; /// a packed public key object
@@ -161,8 +163,9 @@ namespace UOS{
             int64_t bid;
         };
 
-        [[eosio::table]]
-        struct voter_info{
+
+        struct  [[eosio::table]]
+        voter_info{
             name owner;
             std::vector<candidate_info> calcs;
             asset stake;
@@ -188,8 +191,9 @@ namespace UOS{
 
 ////         from uos.accounter {
 
-        [[eosio::table]]
-        struct account_info{
+
+        struct  [[eosio::table]]
+        account_info{
             name owner;
             double account_sum;
 
@@ -198,8 +202,9 @@ namespace UOS{
 //            EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
         };
 
-        [[eosio::table]]
-        struct issuer_info{
+
+        struct  [[eosio::table]]
+        issuer_info{
             name issuer;
 
             uint64_t primary_key() const {return issuer.value;}
@@ -218,8 +223,9 @@ namespace UOS{
 ////         from uos.activity {
 
 
-        [[eosio::table]]
-        struct rate {
+
+        struct  [[eosio::table]]
+        rate {
             uint64_t key;
             checksum256 name_hash;
             string value;
@@ -239,8 +245,9 @@ namespace UOS{
 
         typedef eosio::multi_index<"rate"_n, rate,indexed_by<"name.hash"_n, const_mem_fun<rate, key256, &rate::by_name>>> rateIndex;
 
-        [[eosio::table]]
-        struct ratetr {
+
+        struct  [[eosio::table]]
+        ratetr {
             uint64_t key;
             checksum256 name_hash;
             string value;
@@ -258,15 +265,16 @@ namespace UOS{
             EOSLIB_SERIALIZE(ratetr, (key)(name_hash)(value)(acc_name))
         };
 
-        typedef eosio::multi_index < name{"ratetr"}, ratetr, indexed_by < name{"name.hash"}, const_mem_fun < ratetr, key256, &ratetr::by_name > > > ratetrIndex;
+        typedef multi_index < "ratetr"_n, ratetr, indexed_by < "name.hash"_n, const_mem_fun < ratetr, key256, &ratetr::by_name > > > ratetrIndex;
 
 ////        } from uos.activity
 
 
 ////    from branch "direct set" {
 
-        [[eosio::table]]
-        struct calc_register{
+
+        struct  [[eosio::table]]
+        calc_register{
             name owner;
 
             uint64_t primary_key() const { return owner.value; }
@@ -276,8 +284,9 @@ namespace UOS{
 
         typedef multi_index <"calcreg"_n, calc_register> calcreg_table;
 
-        [[eosio::table]]
-        struct calc_reports{
+
+        struct  [[eosio::table]]
+        calc_reports{
             uint64_t key;
             name acc;
             string hash;
@@ -317,8 +326,9 @@ namespace UOS{
 
 ////    } from branch "direct set"
 
-        [[eosio::table]]
-        struct cons_block{
+
+        struct  [[eosio::table]]
+        cons_block{
             uint64_t block_num;
             string hash;
             name leader;

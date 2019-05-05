@@ -159,7 +159,7 @@ namespace UOS{
             std::vector<candidate_info> new_list;
             for(auto calc: vi.calcs){
                 if(std::find(calcs_to_unvote.begin(),calcs_to_unvote.end(),calc.calc)!=calcs_to_unvote.end()){
-                    auto citr = c_table.find(calc.owner.value);
+                    auto citr = c_table.find(calc.calc.value);
                     //eosio_assert(citr!=c_table.end(),"Something wrong with data about calc");
                     if(citr==c_table.end())
                         return false; //todo
@@ -364,7 +364,7 @@ namespace UOS{
         ratetrIndex ratestr(_self, _self.value);
 
         string name_acc = name;
-        auto secondary_index = ratestr.get_index<name{"name_hash"}.value>();
+        auto secondary_index = ratestr.get_index< "name.hash"_n >();
         auto itr = secondary_index.lower_bound(rate::get_hash(result));
 
         if (itr->acc_name == name_acc) {
@@ -397,8 +397,8 @@ namespace UOS{
         //register all account from the input
         for(auto itr : accounts)
         {
-            print(name{itr}, "\n");
-            if(cr_table.find(itr) == cr_table.end()) {
+            print(itr, "\n");
+            if(cr_table.find(itr.value) == cr_table.end()) {
                 cr_table.emplace(_self, [&](auto &calc_reg) {
                     calc_reg.owner = itr;
                 });
@@ -420,7 +420,7 @@ namespace UOS{
         eosio_assert(itp_reg != cr_table.end(), "account is not a registered calculator");
 
         //check for the report with the same acc + block_num
-        auto ab_index = r_table.get_index<name{"acc_block"}.value>();
+        auto ab_index = r_table.get_index<"acc.block"_n>();
         auto ab_hash = calc_reports::get_acc_block_hash(acc, block_num);
         auto itr_rep = ab_index.find(ab_hash);
         eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
@@ -446,7 +446,7 @@ namespace UOS{
         int rep_count = 0;
         int leader_key = -1;
         name leader_name;
-        auto bn_index = r_table.get_index<name{"block_num"}.value>();
+        auto bn_index = r_table.get_index<"block.num"_n>();
         for(auto i = bn_index.find(block_num); i != bn_index.end() && i->block_num == block_num; i++)
         {
             if(i->hash != hash)
@@ -472,5 +472,9 @@ namespace UOS{
         }
     }
 
-    EOSIO_ABI(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setratetran)(setallcalc)(reporthash))
+
+    void uos_calculator::makecontorg(const name acc, string organization_id, string content_id, uint8_t content_type_id,
+                                     string parent_content_id) {}
+                                     
+    EOSIO_DISPATCH(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setratetran)(setallcalc)(reporthash))
 }
