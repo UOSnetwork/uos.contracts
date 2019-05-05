@@ -1,10 +1,9 @@
-file(GLOB ABI_FILES "*.abi")
-configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+add_contract(uos.airdrop uos.airdrop uos.airdrop.cpp)
 
- # set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-2 -g3" )
+target_include_directories(uos.airdrop
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../eosio.contracts/contracts/eosio.token/include)
 
-add_wast_executable(TARGET uos.airdrop
-        INCLUDE_FOLDERS ${STANDARD_INCLUDE_FOLDERS}
-        LIBRARIES libc libc++ eosiolib
-        DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
-        )
+set_target_properties(uos.airdrop
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
