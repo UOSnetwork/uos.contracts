@@ -14,49 +14,52 @@
 namespace UOS {
     using namespace eosio;
     using std::string;
+    using key256=fixed_bytes<32>;
 
-    class uos_activity : public contract {
+    class [[eosio::contract("uos.activity")]]uos_activity: public contract {
     public:
-        uos_activity(account_name self) : contract(self) {}
 
-        //@abi action
-        void usertouser(const account_name acc_from, const account_name acc_to, uint8_t interaction_type_id);
+        uos_activity(name receiver, name code, datastream<const char*> ds)
+                : contract(receiver, code, ds){}
 
-        //@abi action
-        void makecontent(const account_name acc, string content_id, uint8_t content_type_id, string parent_content_id);
+        [[eosio::action]]
+        void usertouser(const name acc_from, const name acc_to, uint8_t interaction_type_id);
 
-        //@abi action
-        void usertocont(const account_name acc, string content_id, uint8_t interaction_type_id);
+        [[eosio::action]]
+        void makecontent(const name acc, string content_id, uint8_t content_type_id, string parent_content_id);
 
-        //@abi action
-        void dirpost(const account_name acc, string content_id, const account_name acc_to, uint8_t content_type_id);
+        [[eosio::action]]
+        void usertocont(const name acc, string content_id, uint8_t interaction_type_id);
 
-        //@abi action
-        void dirpostorg(const account_name acc, string content_id, string organisation_to_id, uint8_t content_type_id);
+        [[eosio::action]]
+        void dirpost(const name acc, string content_id, const name acc_to, uint8_t content_type_id);
 
-        //@abi action
-        void setrate(string name, string value);
+        [[eosio::action]]
+        void dirpostorg(const name acc, string content_id, string organisation_to_id, uint8_t content_type_id);
 
-        //@abi action
+        [[eosio::action]]
+        void setrate(string _name, string value);
+
+        [[eosio::action]]
         void eraserate(uint64_t index);
 
         /**
          * @brief erase n-record, 0 -all record
          * @param number
          */
-        //@abi action
+        [[eosio::action]]
         void erase(uint64_t number);
 
-        //@abi action
-        void makecontorg(const account_name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
+        [[eosio::action]]
+        void makecontorg(const name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
 
-        //@abi action
-        void socialaction(const account_name acc,string action_json);
+        [[eosio::action]]
+        void socialaction(const name acc,string action_json);
 
     private:
 
-        ///@abi table rate i64
-        struct rate {
+        struct  [[eosio::table]]
+        rate {
             uint64_t key;
             checksum256 name_hash;
             string value;
@@ -74,8 +77,8 @@ namespace UOS {
             EOSLIB_SERIALIZE(rate, (key)(name_hash)(value)(acc_name))
         };
 
-        typedef eosio::multi_index<N(rate), rate, indexed_by<N(
-                name_hash), const_mem_fun<rate, key256, &rate::by_name>>> rateIndex;
+        typedef eosio::multi_index<"rate"_n, rate, indexed_by<
+                "name.hash"_n, const_mem_fun<rate, key256, &rate::by_name>>> rateIndex;
 
     };
 

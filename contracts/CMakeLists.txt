@@ -7,3 +7,4 @@ find_package(eosio.cdt)
 
 add_subdirectory(eosio.fs)
 add_subdirectory(uos.calculator)
+add_subdirectory(uos.activity)
