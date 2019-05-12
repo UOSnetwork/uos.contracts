@@ -22,7 +22,10 @@ namespace eosiosystem {
     _rexpool(_self, _self.value),
     _rexfunds(_self, _self.value),
     _rexbalance(_self, _self.value),
-    _rexorders(_self, _self.value)
+    _rexorders(_self, _self.value),
+    _calculators(_self,_self.value),
+    _rates(_self,_self.value),
+    _calc_voters(_self,_self.value)
    {
       //print( "construct system\n" );
       _gstate  = _global.exists() ? _global.get() : get_default_parameters();

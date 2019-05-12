@@ -151,6 +151,24 @@ namespace eosiosystem {
                         (unpaid_blocks)(last_claim_time)(location) )
    };
 
+    struct [[eosio::table, eosio::contract("eosio.system")]] calculator_info {
+        name                owner;
+        double              total_votes = 0;
+        bool                is_active = true;
+        std::string         url;
+        uint32_t            unpaid_blocks = 0;
+        uint64_t            last_claim_time = 0;
+        uint16_t            location = 0;
+
+        uint64_t primary_key()const { return owner.value;                            }
+        double   by_votes()const    { return is_active ? -total_votes : total_votes; }
+        bool     active()const      { return is_active;                              }
+        void     deactivate()       { is_active = false;                             }
+
+        EOSLIB_SERIALIZE( calculator_info, (owner)(total_votes)(is_active)(url)
+                (unpaid_blocks)(last_claim_time)(location) )
+    };
+
    struct [[eosio::table, eosio::contract("eosio.system")]] producer_info2 {
       name            owner;
       double          votepay_share = 0;
@@ -199,6 +217,26 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(proxied_vote_weight)(is_proxy)(flags1)(reserved2)(reserved3) )
    };
 
+    struct [[eosio::table, eosio::contract("eosio.system")]] calc_voter_info {
+        name                owner;       /// the voter
+        std::vector<name>   calculators;     /// the calculators approved by this voter
+
+        uint64_t            primary_key()const { return owner.value; }
+
+        // explicit serialization macro is not necessary, used here only to improve compilation time
+        EOSLIB_SERIALIZE( calc_voter_info, (owner)(calculators) )
+    };
+
+    struct [[eosio::table, eosio::contract("eosio.system")]] voter_rates {
+        name                        owner;         /// the voter
+        double                      social_rate = 0;   /// voter's share in the total social activity, a fraction between 0 and 1
+        double                      transfer_rate = 0; /// voter's share in the total transfer activity, a fraction between 0 and 1
+
+        uint64_t                    primary_key()const { return owner.value; }
+
+        EOSLIB_SERIALIZE( voter_rates, (owner)(social_rate)(transfer_rate) )
+    };
+
    typedef eosio::multi_index< "voters"_n, voter_info >  voters_table;
 
 
@@ -210,6 +248,12 @@ namespace eosiosystem {
    typedef eosio::singleton< "global"_n, eosio_global_state >   global_state_singleton;
    typedef eosio::singleton< "global2"_n, eosio_global_state2 > global_state2_singleton;
    typedef eosio::singleton< "global3"_n, eosio_global_state3 > global_state3_singleton;
+
+   typedef eosio::multi_index< "calcvoters"_n, calc_voter_info>  calc_voters_table;
+   typedef eosio::multi_index< "rates"_n, voter_rates> rates_table;
+   typedef eosio::multi_index< "calculators"_n, calculator_info,
+            indexed_by<"caltotalvote"_n, const_mem_fun<calculator_info, double, &calculator_info::by_votes>  >
+    >  calculators_table;
 
    static constexpr uint32_t     seconds_per_day = 24 * 3600;
 
@@ -303,7 +347,10 @@ namespace eosiosystem {
 
       private:
          voters_table            _voters;
+         calc_voters_table       _calc_voters;
+         rates_table             _rates;
          producers_table         _producers;
+         calculators_table       _calculators;
          producers_table2        _producers2;
          global_state_singleton  _global;
          global_state2_singleton _global2;
@@ -582,6 +629,18 @@ namespace eosiosystem {
          [[eosio::action]]
          void bidrefund( name bidder, name newname );
 
+         [[eosio::action]]
+         void regcalc( const name calculator, const std::string& url, uint16_t location );
+
+         [[eosio::action]]
+         void unregcalc( const name calculator );
+
+         [[eosio::action]]
+         void votecalc( const name voter, const std::vector<name>& calculators );
+
+         [[eosio::action]]
+         void setrates(const name voter, const double social_rate, const  double transfer_rate);
+
          using init_action = eosio::action_wrapper<"init"_n, &system_contract::init>;
          using setacctram_action = eosio::action_wrapper<"setacctram"_n, &system_contract::setacctram>;
          using setacctnet_action = eosio::action_wrapper<"setacctnet"_n, &system_contract::setacctnet>;
@@ -686,13 +745,18 @@ namespace eosiosystem {
 
          // defined in voting.hpp
          void update_elected_producers( block_timestamp timestamp );
-         void update_votes( const name voter, const name proxy, const std::vector<name>& producers, bool voting );
          void propagate_weight_change( const voter_info& voter );
          double update_producer_votepay_share( const producers_table2::const_iterator& prod_itr,
                                                time_point ct,
                                                double shares_rate, bool reset_to_zero = false );
          double update_total_votepay_share( time_point ct,
                                             double additional_shares_delta = 0.0, double shares_rate_delta = 0.0 );
+
+         void update_votes( const name voter,
+                            const name proxy,
+                            const std::vector<name>& producers,
+                            bool voting,
+                            const std::vector<name>& calculators );
 
          template <auto system_contract::*...Ptrs>
          class registration {

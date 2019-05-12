@@ -437,8 +437,15 @@ namespace eosiosystem {
          validate_b1_vesting( voter_itr->staked );
       }
 
+
       if( voter_itr->producers.size() || voter_itr->proxy ) {
-         update_votes( voter, voter_itr->proxy, voter_itr->producers, false );
+         std::vector<name> calculators;
+         auto calc_voter = _calc_voters.find(voter.value);
+         if(calc_voter != _calc_voters.end()){
+            calculators = calc_voter->calculators;
+         }
+
+         update_votes( voter, voter_itr->proxy, voter_itr->producers, false, calculators );
       }
    }
 
