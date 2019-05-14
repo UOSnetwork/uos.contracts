@@ -133,7 +133,7 @@ namespace UOS{
 
 
 
-        struct  [[eosio::table]]
+        struct  [[eosio::table("global")]]
         contract_state{
             asset base_asset;
             name fund_name;
@@ -154,7 +154,7 @@ namespace UOS{
             uint64_t primary_key() const { return owner.value;}
             void     deactivate()       { calc_key = eosio::public_key(); is_active = false; } //??
 
-//            EOSLIB_SERIALIZE( calc_info, (owner)(total_votes)(calc_key)(is_active)(url)(unpaid_blocks)(last_claim_time)(location) )
+            EOSLIB_SERIALIZE( calc_info, (owner)(total_votes)(calc_key)(is_active)(url)(unpaid_blocks)(last_claim_time)(location) )
 
         };
 
@@ -172,7 +172,7 @@ namespace UOS{
             asset stake_voted;
             uint64_t primary_key() const {return owner.value;}
 
-//            EOSLIB_SERIALIZE (voter_info, (owner)(calcs)(stake)(stake_voted))
+            EOSLIB_SERIALIZE (voter_info, (owner)(calcs)(stake)(stake_voted))
         };
 
 
@@ -199,7 +199,7 @@ namespace UOS{
 
             uint64_t  primary_key() const {return owner.value;}
 
-//            EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
+            EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
         };
 
 
@@ -209,7 +209,7 @@ namespace UOS{
 
             uint64_t primary_key() const {return issuer.value;}
 
-//            EOSLIB_SERIALIZE(issuer_info,(issuer))
+            EOSLIB_SERIALIZE(issuer_info,(issuer))
         };
 
 

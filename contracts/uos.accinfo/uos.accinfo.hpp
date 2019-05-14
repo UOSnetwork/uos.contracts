@@ -6,9 +6,7 @@
 #include <eosiolib/print.hpp>
 #include <eosiolib/crypto.h>
 #include <eosiolib/public_key.hpp>
-#include <eosiolib/types.hpp>
 #include <eosiolib/asset.hpp>
-#include <eosiolib/singleton.hpp>
 #include <string>
 #include <cstdint>
 #include <vector>
@@ -18,25 +16,27 @@ namespace UOS {
     using namespace eosio;
     using std::string;
 
-    class uos_accinfo : public eosio::contract {
+    class [[eosio::contract("uos.accinfo")]]uos_accinfo : public eosio::contract {
     public:
-        uos_accinfo(account_name self) : contract(self) {}
+        uos_accinfo(name receiver, name code, datastream<const char*> ds)
+                : contract(receiver, code, ds){}
 
-        /// @abi action
-        void setprofile(account_name acc, string profile_json);
+        [[eosio::action]]
+        void setprofile(name acc, string profile_json);
     private:
 
-        ///@abi table accprofile
-        struct acc_profile {
-            account_name acc;
+
+        struct [[eosio::table]]
+        acc_profile {
+            name acc;
             string profile_json;
 
-            uint64_t primary_key() const { return acc; }
+            uint64_t primary_key() const { return acc.value; }
 
             EOSLIB_SERIALIZE(acc_profile, (acc)(profile_json))
         };
 
-        typedef multi_index <N(accprofile), acc_profile> accprofile_table;
+        typedef multi_index <"accprofile"_n, acc_profile> accprofile_table;
     };
 }
 

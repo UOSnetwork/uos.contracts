@@ -2,12 +2,12 @@
 
 namespace UOS {
 
-    void uos_accinfo::setprofile(account_name acc, string profile_json) {
+    void uos_accinfo::setprofile(name acc, string profile_json) {
 
         require_auth(acc);
 
-        accprofile_table userinfo(_self, acc);
-        auto itr = userinfo.find(acc);
+        accprofile_table userinfo(_self, acc.value);
+        auto itr = userinfo.find(acc.value);
         if (itr != userinfo.end()) {
             userinfo.modify(itr, acc, [&](acc_profile &item) {
                 item.profile_json = profile_json;
@@ -22,5 +22,5 @@ namespace UOS {
 
     }
 
-    EOSIO_ABI( uos_accinfo, (setprofile))
+    EOSIO_DISPATCH( uos_accinfo, (setprofile))
 }

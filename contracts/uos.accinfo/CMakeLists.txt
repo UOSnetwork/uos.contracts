@@ -1,8 +1,9 @@
-file(GLOB ABI_FILES "*.abi")
-configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+add_contract(uos.accinfo uos.accinfo uos.accinfo.cpp)
 
-add_wast_executable(TARGET uos.accinfo
-  INCLUDE_FOLDERS ${STANDARD_INCLUDE_FOLDERS}
-  LIBRARIES libc libc++ eosiolib
-  DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(uos.accinfo
+        PUBLIC
+        )
+
+set_target_properties(uos.accinfo
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
