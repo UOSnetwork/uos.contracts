@@ -32,8 +32,8 @@ public:
             print(";");
             printhex( &item[1], sizeof(item[1]));
             print("\n");
-            print((char*)inp);
-            print("\n");
+            // print((char*)inp);
+            // print("\n");
             checksum256 inp[2] = {item[0],item[1]};
             checksum256 temp;
             temp = sha256((char *)inp, sizeof(checksum256[2]));
