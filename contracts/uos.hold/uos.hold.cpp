@@ -3,11 +3,17 @@
 
 
 namespace UOS {
-    void uos_hold::send(uint64_t external_id,
-                                 uint64_t airdrop_id,
-                                 uint64_t amount,
-                                 name acc_name,
-                                 std::string _symbol) {
+
+    void uos_hold::settime(int64_t begin, int64_t end) {
+           print("DEPOSIT","\n");
+           print("BEGIN ", begin, "\n");
+           print("END ", end, "\n");
+    }
+
+    void uos_hold::deposit(name acc_name, eosio::asset amount) {
+           print("DEPOSIT","\n");
+           print("ACC_NAME ", name{acc_name}, "\n");
+           print("AMOUNT ");amount.print();print("\n");
 //         require_auth(_self);
 
 // //        print("EXTERNAL ID ", external_id, '\n');
@@ -48,5 +54,10 @@ namespace UOS {
 //         });
     }
 
-    EOSIO_DISPATCH( uos_hold, (send))
+    void uos_hold::withdraw(name acc_name) {
+           print("DEPOSIT","\n");
+           print("ACC_NAME ", name{acc_name}, "\n");
+    }
+
+    EOSIO_DISPATCH( uos_hold, (settime)(deposit)(withdraw))
 }
