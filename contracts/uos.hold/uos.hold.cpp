@@ -5,9 +5,29 @@
 namespace UOS {
 
     void uos_hold::settime(int64_t begin, int64_t end) {
-           print("DEPOSIT","\n");
+           print("SETTIME","\n");
            print("BEGIN ", begin, "\n");
            print("END ", end, "\n");
+
+           //check self-authentication
+           require_auth(_self);
+
+           //check if begin is before end
+           eosio_assert(begin < end, "begin must be less than end");
+
+           //check if the limits are already set
+           if(_limits.get().begin != 0 || _limits.get().end != 0){
+               print("LIMITS ARE SET ALREADY!!! TODO THROW AN EXCEPTION\n");
+               print("BEGIN ", _limits.get().begin, "\n");
+               print("END ", _limits.get().begin, "\n");
+           }
+
+           //set values
+           time_limits temp;
+           temp.begin = begin;
+           temp.end = end;
+           _limits.set(temp,_self);
+
     }
 
     void uos_hold::deposit(name acc_name, eosio::asset amount) {
@@ -55,7 +75,7 @@ namespace UOS {
     }
 
     void uos_hold::withdraw(name acc_name) {
-           print("DEPOSIT","\n");
+           print("WITHDRAW","\n");
            print("ACC_NAME ", name{acc_name}, "\n");
     }
 

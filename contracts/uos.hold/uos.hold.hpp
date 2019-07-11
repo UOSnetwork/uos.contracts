@@ -24,7 +24,7 @@ namespace UOS {
                 : contract(receiver, code, ds) , _limits(code,receiver.value){
 
             if(!_limits.exists()){
-                time_limits temp;
+                    time_limits temp;
                     temp.begin = 0;
                     temp.end = 0;
                     _limits.set(temp,_self);
@@ -76,5 +76,3 @@ namespace UOS {
 
     };
 }
-
-
