@@ -35,6 +35,9 @@ namespace UOS {
         void settime(int64_t begin, int64_t end);
 
         [[eosio::action]]
+        void transfer(name from, name to, asset quantity, string memo);
+
+        [[eosio::action]]
         void deposit(name acc_name, eosio::asset amount);
 
         [[eosio::action]]
@@ -50,19 +53,14 @@ namespace UOS {
 
 
         // struct  [[eosio::table]]
-        // rec_entry {
-        //     uint64_t id;
-        //     uint64_t external_id;
-        //     uint64_t airdrop_id;
-        //     uint64_t amount;
+        // balance_entry {
         //     name acc_name;
-        //     string symbol;
+        //     uint64_t deposit;
+        //     uint64_t withdrawal;
 
-        //     uint64_t primary_key() const { return id; }
-        //     uint64_t by_external_id() const { return external_id; }
-        //     uint64_t by_acc_name() const { return acc_name.value; }
+        //     uint64_t primary_key() const { return acc_name.value; }
 
-        //     EOSLIB_SERIALIZE(rec_entry, (id)(external_id)(airdrop_id)(amount)(acc_name)(symbol))
+        //     EOSLIB_SERIALIZE(balance_entry, (acc_name)(deposit)(withdrawal))
         // };
 
         typedef eosio::singleton <"limits"_n, time_limits> time_limits_singleton;

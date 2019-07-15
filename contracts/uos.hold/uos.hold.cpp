@@ -30,6 +30,14 @@ namespace UOS {
 
     }
 
+    void uos_hold::transfer(name from, name to, asset quantity, string memo) {
+        print("TRANSFER\n");
+        print("FROM ", name{from}, "\n");
+        print("TO ", name{to}, "\n");
+        print("QUANTITY ");quantity.print();print("\n");
+        print("MEMO ", memo, "\n");
+    }
+
     void uos_hold::deposit(name acc_name, eosio::asset amount) {
            print("DEPOSIT","\n");
            print("ACC_NAME ", name{acc_name}, "\n");
@@ -75,9 +83,44 @@ namespace UOS {
     }
 
     void uos_hold::withdraw(name acc_name) {
-           print("WITHDRAW","\n");
+           print("WITHDRAWW","\n");
            print("ACC_NAME ", name{acc_name}, "\n");
     }
+    
+    // void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+    //     uos_hold _uos_hold(name(receiver));
+    //     if(code==receiver && action== name("settime").value) {
+    //         execute_action(name(receiver), name(code), &uos_hold::settime );
+    //     }
+    //     else if(code==receiver && action== name("deposit").value) {
+    //         execute_action(name(receiver), name(code), &uos_hold::deposit );
+    //     }
+    //     else if(code==receiver && action== name("withdraw").value) {
+    //         execute_action(name(receiver), name(code), &uos_hold::withdraw );
+    //     }
+    //     else if(code==name("eosio.token").value && action== name("transfer").value) {
+    //     execute_action(name(receiver), name(code), &uos_hold::transfer );
+    //     }
+    // }
 
-    EOSIO_DISPATCH( uos_hold, (settime)(deposit)(withdraw))
+    extern "C" {
+        [[eosio::wasm_entry]]
+    void apply( uint64_t receiver, uint64_t code, uint64_t action ) { 
+        if((code == "eosio.token"_n.value && action == "transfer"_n.value) ) { 
+
+            eosio::execute_action(eosio::name(receiver), eosio::name(code), &uos_hold::transfer);
+
+        }else if(code == receiver){
+
+            switch( action ) { 
+                EOSIO_DISPATCH_HELPER( uos_hold, (transfer) ) 
+            } 
+            eosio_exit(0);
+        } 
+
+    } 
+    }
+
+
+    // EOSIO_DISPATCH( uos_hold, (settime)(transfer)(deposit)(withdraw))
 }
