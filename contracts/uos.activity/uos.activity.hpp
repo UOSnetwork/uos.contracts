@@ -51,10 +51,13 @@ namespace UOS {
         void erase(uint64_t number);
 
         [[eosio::action]]
-        void makecontorg(const name acc,string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
+        void makecontorg(const name acc, string organization_id, string content_id, uint8_t content_type_id, string parent_content_id);
 
         [[eosio::action]]
-        void socialaction(const name acc,string action_json);
+        void socialaction(const name acc, string action_json);
+
+        [[eosio::action]]
+        void socialactndt(const name acc, string action_json, string action_data);
 
     private:
 
