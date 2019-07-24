@@ -110,7 +110,12 @@ namespace UOS {
        require_auth( acc );
    }
 
+   void uos_activity::histactndt(const name acc, string action_json, string action_data, string timestamp)
+   {
+       require_auth( acc );
+   }
 
-    EOSIO_DISPATCH(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg)(dirpost)(dirpostorg)(socialaction)(socialactndt))
+
+    EOSIO_DISPATCH(uos_activity, (usertouser)(makecontent)(usertocont)(setrate)(eraserate)(erase)(makecontorg)(dirpost)(dirpostorg)(socialaction)(socialactndt)(histactndt))
 
 }

@@ -59,6 +59,9 @@ namespace UOS {
         [[eosio::action]]
         void socialactndt(const name acc, string action_json, string action_data);
 
+        [[eosio::action]]
+        void histactndt(const name acc, string action_json, string action_data, string timestamp);
+
     private:
 
         struct  [[eosio::table]]
