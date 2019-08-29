@@ -52,24 +52,20 @@ namespace UOS {
             uint64_t end;
         };
 
+        struct  [[eosio::table]]
+        balance_entry {
+            name acc_name;
+            uint64_t deposit;
+            uint64_t withdrawal;
 
-        // struct  [[eosio::table]]
-        // balance_entry {
-        //     name acc_name;
-        //     uint64_t deposit;
-        //     uint64_t withdrawal;
+            uint64_t primary_key() const { return acc_name.value; }
 
-        //     uint64_t primary_key() const { return acc_name.value; }
-
-        //     EOSLIB_SERIALIZE(balance_entry, (acc_name)(deposit)(withdrawal))
-        // };
+            EOSLIB_SERIALIZE(balance_entry, (acc_name)(deposit)(withdrawal))
+        };
 
         typedef eosio::singleton <"limits"_n, time_limits> time_limits_singleton;
 
-        // typedef multi_index <"receipt"_n, rec_entry
-        //         , indexed_by<"external.id"_n, const_mem_fun<rec_entry, uint_fast64_t , &rec_entry::by_external_id>>
-        //         , indexed_by<"acc.name"_n, const_mem_fun<rec_entry, uint_fast64_t , &rec_entry::by_acc_name>>
-        // > receipt_table;
+        typedef multi_index <"balance"_n, balance_entry> balance_table;
 
         time_limits_singleton _limits;
 

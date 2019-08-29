@@ -35,7 +35,33 @@ namespace UOS {
         print("FROM ", name{from}, "\n");
         print("TO ", name{to}, "\n");
         print("QUANTITY ", quantity.to_string(), "\n");
+        print("AMOUNT ", quantity.amount, "\n");
+        print("SYMBOL CODE ", quantity.symbol.code().to_string(), "\n");
         print("MEMO ", memo, "\n");
+
+        eosio_assert(quantity.symbol.code().to_string() == "UOS", "only UOS core token can be accepted");
+
+        balance_table bals(_self,_self.value);
+        auto acc_name = eosio::name(memo);
+        auto itr = bals.find(acc_name.value);
+        if(itr != bals.end()) {
+            print("FOUND!!!!!\n");
+            bals.modify(itr,_self, [&] (balance_entry &item){
+                item.acc_name=acc_name;
+                item.deposit=itr->deposit + quantity.amount;
+                item.withdrawal=itr->withdrawal;
+            });
+            print("AND MODIFIED\n");
+        }
+        else {
+            print("NOT FOUND!!!!!\n");
+            bals.emplace(_self,[&] (balance_entry &item){
+                item.acc_name=acc_name;
+                item.deposit=quantity.amount;
+                item.withdrawal=0;
+            });
+            print("AND ADDED\n");
+        }
     }
 
     void uos_hold::withdraw(name acc_name) {
@@ -58,4 +84,3 @@ namespace UOS {
     }
     }
 }
-    
