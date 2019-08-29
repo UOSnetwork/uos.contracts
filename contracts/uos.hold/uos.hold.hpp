@@ -24,10 +24,14 @@ namespace UOS {
                 : contract(receiver, code, ds) , _limits(code,receiver.value){
 
             if(!_limits.exists()){
-                    time_limits temp;
-                    temp.begin = 0;
-                    temp.end = 0;
-                    _limits.set(temp,_self);
+                print("THERE IS NO LIMIT!!!!!\n");
+                print("RECEIVER ", name{receiver}, "\n");
+                print("CODE ", name{code}, "\n");
+                print("_SELF ", name{_self}, "\n");
+                    // time_limits temp;
+                    // temp.begin = 0;
+                    // temp.end = 0;
+                    // _limits.set(temp,_self);
                 }
         }
 
