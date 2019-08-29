@@ -42,9 +42,6 @@ namespace UOS {
         void transfer(name from, name to, asset quantity, string memo);
 
         [[eosio::action]]
-        void deposit(name acc_name, eosio::asset amount);
-
-        [[eosio::action]]
         void withdraw(name acc_name);
 
     private:
