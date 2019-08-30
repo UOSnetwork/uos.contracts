@@ -1,13 +1,14 @@
 #pragma once
 
-#include <eosiolib/eosio.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
 //#include <eosiolib/print.hpp>
 //#include <eosiolib/crypto.h>
 //#include <eosiolib/public_key.hpp>
 //#include <eosiolib/types.hpp>
-#include <eosiolib/asset.hpp>
+#include <eosio/asset.hpp>
 //#include <eosiolib/symbol.hpp>
-#include <eosiolib/singleton.hpp>
+#include <eosio/singleton.hpp>
 //#include <eosio.token/eosio.token.hpp>
 //#include <string>
 //#include <cstdint>
