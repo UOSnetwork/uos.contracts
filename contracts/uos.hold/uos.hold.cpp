@@ -12,15 +12,11 @@ namespace UOS {
            //check self-authentication
            require_auth(_self);
 
-           //check if begin is before end
+           check(0 < begin, "must be non-zero values");
            check(begin < end, "begin must be less than end");
 
            //check if the limits are already set
-           if(_limits.get().begin != 0 || _limits.get().end != 0){
-               print("LIMITS ARE SET ALREADY!!! TODO THROW AN EXCEPTION\n");
-               print("BEGIN ", _limits.get().begin, "\n");
-               print("END ", _limits.get().begin, "\n");
-           }
+           check(!_limits.exists(), "time limits are already set");
 
            //set values
            time_limits temp;
