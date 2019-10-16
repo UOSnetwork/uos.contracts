@@ -1,5 +1,5 @@
 
-#include <eosio.token/eosio.token.hpp>
+//#include <eosio.token/eosio.token.hpp>
 #include <map>
 #include "uos.calculator.hpp"
 
@@ -52,7 +52,7 @@ namespace UOS{
     void uos_calculator::stake(const name acc, const eosio::asset value) {
         require_auth(acc);
 
-        eosio_assert(value.symbol==_state.get().base_asset.symbol,"Asset symbol is incompatible with used in contract");
+        check(value.symbol==_state.get().base_asset.symbol,"Asset symbol is incompatible with used in contract");
 
         voters_table voters(_self,acc.value);
         auto itr=voters.find(acc.value);
@@ -66,9 +66,12 @@ namespace UOS{
                a.stake+=value;
             });
         }
-        eosio_assert(is_account(_state.get().fund_name),(std::string("create uos.stake first ")+ name{_state.get().fund_name}.to_string()).c_str());
-        INLINE_ACTION_SENDER(eosio::token, transfer)( "eosio.token"_n, {acc, "active"_n},
-                                                      { acc, _state.get().fund_name, value, std::string("stake tokens") } );
+        check(is_account(_state.get().fund_name),(std::string("create uos.stake first ")+ name{_state.get().fund_name}.to_string()).c_str());
+        action(
+            permission_level{ acc, name{"active"} },
+            name{"eosio.token"}, name{"transfer"},
+            std::make_tuple(acc, _state.get().fund_name, value, std::string("stake tokens"))
+        ).send();
 
     }
 
@@ -76,15 +79,18 @@ namespace UOS{
         require_auth(acc);
         voters_table voters(_self,acc.value);
         auto itr=voters.find(acc.value);
-        eosio_assert(itr != voters.end(), "there is nothing to refund here");
+        check(itr != voters.end(), "there is nothing to refund here");
         //todo check timeout
 
-        eosio_assert(is_account(_state.get().fund_name),"create uos.stake first");
+        check(is_account(_state.get().fund_name),"create uos.stake first");
 
         //todo: take back votes from candidates first of all (unvote)
 
-        INLINE_ACTION_SENDER(eosio::token, transfer)( "eosio.token"_n, {_state.get().fund_name, "active"_n},
-                                                      { _state.get().fund_name, itr->owner, itr->stake, std::string("unstake tokens") } );
+        action(
+            permission_level{ _state.get().fund_name, name{"active"} },
+            name{"eosio.token"}, name{"transfer"},
+            std::make_tuple(_state.get().fund_name, itr->owner, itr->stake, std::string("unstake tokens"))
+        ).send();
 
 
         voters.erase(itr);
@@ -95,7 +101,7 @@ namespace UOS{
         require_auth(acc);
         calcs_table calcs(_self,_self.value);
         auto itr = calcs.find(acc.value);
-        eosio_assert(itr!=calcs.end(),(string("This account is not in calcs")+name{acc}.to_string()).c_str());
+        check(itr!=calcs.end(),(string("This account is not in calcs")+name{acc}.to_string()).c_str());
     }
 
     bool uos_calculator::check_calc(const name acc) {
@@ -122,20 +128,20 @@ namespace UOS{
         require_auth(voter);
         voters_table voters(_self,voter.value);
         auto itr_voter = voters.find(voter.value);
-        eosio_assert(itr_voter!=voters.end(),"Voter not found in table. Need to stake first");
-        eosio_assert(itr_voter->stake_voted.amount==0,"unvote all calcs first");
+        check(itr_voter!=voters.end(),"Voter not found in table. Need to stake first");
+        check(itr_voter->stake_voted.amount==0,"unvote all calcs first");
 
         for(auto item : calcs){
-            eosio_assert(is_account(item),(string("account not found: ") + (name{item}).to_string()).c_str());
-            eosio_assert(check_calc(item),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
+            check(is_account(item),(string("account not found: ") + (name{item}).to_string()).c_str());
+            check(check_calc(item),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
         }
 
         int64_t vote_for_each = get_stake(voter).amount/(int64_t )calcs.size();
-        eosio_assert(vote_for_each>0, "you can not vote zero tokens for each candidate");
+        check(vote_for_each>0, "you can not vote zero tokens for each candidate");
         calcs_table c_table(_self,_self.value);
         for(auto item : calcs){
             auto itr = c_table.find(item.value);
-            eosio_assert(itr!=c_table.end(),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
+            check(itr!=c_table.end(),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
             c_table.modify(itr,_self,[&](calc_info& info){
                info.total_votes+= static_cast<uint64_t > (vote_for_each);
             });
@@ -160,7 +166,7 @@ namespace UOS{
             for(auto calc: vi.calcs){
                 if(std::find(calcs_to_unvote.begin(),calcs_to_unvote.end(),calc.calc)!=calcs_to_unvote.end()){
                     auto citr = c_table.find(calc.calc.value);
-                    //eosio_assert(citr!=c_table.end(),"Something wrong with data about calc");
+                    //check(citr!=c_table.end(),"Something wrong with data about calc");
                     if(citr==c_table.end())
                         return false; //todo
                     c_table.modify(citr,_self,[&](calc_info &ci){
@@ -182,9 +188,9 @@ namespace UOS{
         require_auth(voter);
         voters_table voters(_self,voter.value);
         auto itr = voters.find(voter.value);
-        eosio_assert(itr!=voters.end(),"Voter not found");
+        check(itr!=voters.end(),"Voter not found");
 
-        eosio_assert(unvote_vector(voters,itr,voter,calcs_to_unvote),"unvote vector error");
+        check(unvote_vector(voters,itr,voter,calcs_to_unvote),"unvote vector error");
 
 
     }
@@ -193,18 +199,18 @@ namespace UOS{
         require_auth(voter);
         voters_table voters(_self,voter.value);
         auto itr = voters.find(voter.value);
-        eosio_assert(itr!=voters.end(),"Voter not found");
+        check(itr!=voters.end(),"Voter not found");
         std::vector<name> calcs_list;
         for(auto calc : itr->calcs){
             calcs_list.push_back(calc.calc);
         }
-        eosio_assert(unvote_vector(voters,itr,voter,calcs_list),"unvote vector error");
+        check(unvote_vector(voters,itr,voter,calcs_list),"unvote vector error");
         //unvote(voter,calcs_list);
     }
 
     void uos_calculator::setasset(const eosio::asset value) {
         require_auth(_self);
-        eosio_assert((_state.get().base_asset.symbol)!=(value.symbol),"Nothing to change");
+        check((_state.get().base_asset.symbol)!=(value.symbol),"Nothing to change");
         //todo check if there is someone's stake, then..
     }
     
@@ -214,7 +220,7 @@ namespace UOS{
         print("hello");
         accounts_table actable(_self,owner.value);
         auto act_itr = actable.find(owner.value);
-        eosio_assert(act_itr!=actable.end(),"Reward not found");
+        check(act_itr!=actable.end(),"Reward not found");
         double reward = act_itr->account_sum;
         print(reward);
         asset val;
@@ -228,14 +234,22 @@ namespace UOS{
         double temp = reward*k;
 
         val.amount = static_cast<int64_t >(temp);
-        eosio_assert(val.amount > 0,"nothing to withdrawal");
+        check(val.amount > 0,"nothing to withdrawal");
         print(val);
 
         actable.modify(act_itr,owner,[&](account_info &account){
             account.account_sum-=double(val.amount)/k;
         });
-        INLINE_ACTION_SENDER(eosio::token, issue) ( name{"eosio.token"}, {name{"eosio"},name{"active"}},{_self, val, std::string("issue tokens for account")} );
-        INLINE_ACTION_SENDER(eosio::token, transfer) ( name{"eosio.token"}, {_self, name{"active"}} ,{ _self, owner, val, std::string("transfer issued tokens for account")} );
+        action(
+            permission_level{ name{"eosio"},name{"active"} },
+            name{"eosio.token"}, name{"issue"},
+            std::make_tuple(_self, val, std::string("issue tokens for account"))
+        ).send();
+        action(
+            permission_level{ _self, name{"active"} },
+            name{"eosio.token"}, name{"transfer"},
+            std::make_tuple(_self, owner, val, std::string("transfer issued tokens for account"))
+        ).send();
     }
 
     void uos_calculator::withdraw(name owner, double sum) {
@@ -243,7 +257,7 @@ namespace UOS{
         double fsum = double(sum);
         accounts_table actable(_self,owner.value);
         auto act_itr = actable.find(owner.value);
-        eosio_assert(act_itr!=actable.end(),"Reward not found");
+        check(act_itr!=actable.end(),"Reward not found");
         if (fsum > act_itr->account_sum ){
             fsum = act_itr->account_sum;
         }
@@ -257,21 +271,29 @@ namespace UOS{
         }
         double temp = reward*k;
         val.amount = static_cast<int64_t >(temp);
-        eosio_assert(val.amount > 0,"nothing to withdrawal");
+        check(val.amount > 0,"nothing to withdrawal");
         print(val);
 
         actable.modify(act_itr,owner,[&](account_info &account){
             account.account_sum-=double(val.amount)/k;
         });
-        INLINE_ACTION_SENDER(eosio::token, issue) ( name{"eosio.token"}, {name{"eosio"},name{"active"}},{_self, val, std::string("issue tokens for account")} );
-        INLINE_ACTION_SENDER(eosio::token, transfer) ( name{"eosio.token"}, {_self, name{"active"}} ,{ _self, owner, val, std::string("transfer issued tokens for account")} );
+        action(
+            permission_level{ name{"eosio"},name{"active"} },
+            name{"eosio.token"}, name{"issue"},
+            std::make_tuple(_self, val, std::string("issue tokens for account"))
+        ).send();
+        action(
+            permission_level{ _self, name{"active"} },
+            name{"eosio.token"}, name{"transfer"},
+            std::make_tuple(_self, owner, val, std::string("transfer issued tokens for account"))
+        ).send();
     }
 
     void uos_calculator::addsum(name issuer, name receiver, double sum, std::string message) {
         require_auth(issuer);
 //        print(message);
-        eosio_assert(is_account(receiver),"error account name");
-//        eosio_assert(is_issuer(issuer),"account is not registered as issuer");
+        check(is_account(receiver),"error account name");
+//        check(is_issuer(issuer),"account is not registered as issuer");
         accounts_table actable(_self,receiver.value);
         auto act_itr = actable.find(receiver.value);
         if(act_itr==actable.end()){
@@ -288,7 +310,7 @@ namespace UOS{
 
     void uos_calculator::regissuer(name issuer) {
         require_auth(issuer);
-        eosio_assert(!is_issuer(issuer),"Already registered as issuer");
+        check(!is_issuer(issuer),"Already registered as issuer");
         issuers_table isstable(_self,_self.value);
         isstable.emplace(issuer,[&](issuer_info &item){
             item.issuer=issuer;
@@ -314,7 +336,7 @@ namespace UOS{
         if (itr->acc_name == name_acc) {
 //        secondary_index.erase(itr);//erase should be failed
             auto iter_rate = rates.find(itr->key);
-            eosio_assert(iter_rate != rates.end(), "Rate is key not found");
+            check(iter_rate != rates.end(), "Rate is key not found");
 
             rates.modify(iter_rate, _self, [&](rate &item) {
                 item.value = value;
@@ -370,7 +392,7 @@ namespace UOS{
         if (itr->acc_name == name_acc) {
 //        secondary_index.erase(itr);//erase should be failed
             auto iter_rate = ratestr.find(itr->key);
-            eosio_assert(iter_rate != ratestr.end(), "Rate is key not found ");
+            check(iter_rate != ratestr.end(), "Rate is key not found ");
 
             ratestr.modify(iter_rate, _self, [&](ratetr &item) {
                 item.value = value;
@@ -417,13 +439,13 @@ namespace UOS{
 
         //check acc to be registered as calculator
         auto itp_reg = cr_table.find(acc.value);
-        eosio_assert(itp_reg != cr_table.end(), "account is not a registered calculator");
+        check(itp_reg != cr_table.end(), "account is not a registered calculator");
 
         //check for the report with the same acc + block_num
         auto ab_index = r_table.get_index<"acc.block"_n>();
         auto ab_hash = calc_reports::get_acc_block_hash(acc, block_num);
         auto itr_rep = ab_index.find(ab_hash);
-        eosio_assert(itr_rep == ab_index.end(), "hash already reported for this block");
+        check(itr_rep == ab_index.end(), "hash already reported for this block");
 
         r_table.emplace(_self, [&](calc_reports &calc_rep) {
             calc_rep.key = r_table.available_primary_key();

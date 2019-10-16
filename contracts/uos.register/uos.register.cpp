@@ -7,7 +7,7 @@ namespace UOS {
 
         accregister_table ar_table(_self, eos_account.value);
         auto itr = ar_table.find(eos_account.value);
-        eosio_assert(itr == ar_table.end(), "account name already registered");
+        check(itr == ar_table.end(), "account name already registered");
         ar_table.emplace(eos_account, [&](account_register &item) {
                 item.eos_account = eos_account;
                 item.uos_account = uos_account;

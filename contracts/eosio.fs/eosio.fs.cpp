@@ -4,18 +4,18 @@ namespace uos{
 
     void eosio_fs::sellfs(const name acc, uint64_t amount_bytes, asset price){
 
-        eosio_assert(price.symbol == symbol(CORE_SYMBOL,4),"not valud currency");
+        check(price.symbol == symbol(CORE_SYMBOL,4),"not valud currency");
         require_auth(acc);
         userfs_table fstab(_self,acc.value);
         auto itr = fstab.find(acc.value);
-        eosio_assert(itr != fstab.end(), "you should buy a free space firstly");
+        check(itr != fstab.end(), "you should buy a free space firstly");
 
         if(amount_bytes>(itr->fs_all_space-itr->fs_allocated_space))
             amount_bytes = itr->fs_all_space-itr->fs_allocated_space;
 
         fstab.modify(itr,acc,[&](userfs_info &item){
                 item.fs_all_space-=amount_bytes;
-                eosio_assert(item.fs_all_space>=item.fs_allocated_space,"double check");
+                check(item.fs_all_space>=item.fs_allocated_space,"double check");
         });
 
         lots_table lots(_self,_self.value);
@@ -32,7 +32,7 @@ namespace uos{
         require_auth(acc);
         lots_table lots(_self,_self.value);
         auto lot_itr = lots.find(lot);
-        eosio_assert(lot_itr != lots.end(), "Lot not found");
+        check(lot_itr != lots.end(), "Lot not found");
         print("transfer tokens");
         //INLINE_ACTION_SENDER(eosio::token, transfer)( N(eosio.token), {acc, N(eosio.code)},{acc,lot_itr->owner,lot_itr->price,std::string("buy fs")});
         auto price = lot_itr->price;
@@ -66,11 +66,11 @@ namespace uos{
 
     void eosio_fs::addspace(uint64_t amount) {
         if(amount == 0) return;
-        ::require_auth2(_self.value,"active"_n.value);
+        require_auth(_self);
         userfs_table fstab(_self,_self.value);
         auto itr = fstab.find(_self.value);
-        eosio_assert(itr!=fstab.end(),"??");
-        eosio_assert(amount>=FS_SLICE_SIZE,"too small amount to add");
+        check(itr!=fstab.end(),"??");
+        check(amount>=FS_SLICE_SIZE,"too small amount to add");
         fstab.modify(itr,_self,[&](userfs_info &item){
             item.fs_all_space+=amount;
         });
@@ -89,7 +89,7 @@ namespace uos{
         require_auth(owner);
         userfs_table fstab(_self,owner.value);
         auto user_itr = fstab.find(owner.value);
-        eosio_assert(user_itr != fstab.end(), "you should buy a free space firstly");
+        check(user_itr != fstab.end(), "you should buy a free space firstly");
         fstab.modify(user_itr,owner,[&](userfs_info &item){
             item.rsa_open_key=key;
         });
@@ -97,13 +97,13 @@ namespace uos{
 
     void eosio_fs::changealloc(const name owner, int64_t amount_bytes) {
         require_auth(owner);
-        eosio_assert(amount_bytes!=0,"amount shouldn't be zero");
+        check(amount_bytes!=0,"amount shouldn't be zero");
         userfs_table fstab(_self,owner.value);
         auto user_itr = fstab.find(owner.value);
-        eosio_assert(user_itr != fstab.end(), "you should buy a free space firstly");
+        check(user_itr != fstab.end(), "you should buy a free space firstly");
         if(amount_bytes>0) {
             auto tmp = static_cast<uint64_t >(amount_bytes);
-            eosio_assert((user_itr->fs_allocated_space + tmp) <= user_itr->fs_all_space,
+            check((user_itr->fs_allocated_space + tmp) <= user_itr->fs_all_space,
                          "Not enough free space. You should buy it");
 
             fstab.modify(user_itr, owner, [&](userfs_info &item) {
@@ -128,12 +128,12 @@ namespace uos{
         require_auth(acc);
         lots_table fslots(_self,_self.value);
         auto lot_itr = fslots.find(lot);
-        eosio_assert(lot_itr!=fslots.end(),"lot not found");
-        eosio_assert(lot_itr->owner==acc,"you must be owner of this lot");
+        check(lot_itr!=fslots.end(),"lot not found");
+        check(lot_itr->owner==acc,"you must be owner of this lot");
 
         userfs_table fstab(_self,acc.value);
         auto user_itr = fstab.find(acc.value);
-        eosio_assert(user_itr!=fstab.end(),"you should buy a free space firstly");
+        check(user_itr!=fstab.end(),"you should buy a free space firstly");
 
         fstab.modify(user_itr,acc,[&](userfs_info &item){
             item.fs_all_space+=lot_itr->fs_space;
@@ -145,8 +145,8 @@ namespace uos{
         require_auth(fsacc);
         userfs_table fstab(_self,acc.value);
         auto user_itr = fstab.find(acc.value);
-        eosio_assert(user_itr!=fstab.end(),"user information not found");
-        eosio_assert((user_itr->fs_allocated_space-user_itr->fs_in_use)>=amount_bytes,"not enough allocated space");
+        check(user_itr!=fstab.end(),"user information not found");
+        check((user_itr->fs_allocated_space-user_itr->fs_in_use)>=amount_bytes,"not enough allocated space");
         if(fsacc!=_self){
             INLINE_ACTION_SENDER(eosio_fs,addused)(_self,{_self,"active"_n},{_self,acc,amount_bytes});
         }
@@ -160,8 +160,8 @@ namespace uos{
         require_auth(fsacc);
         userfs_table fstab(_self,acc.value);
         auto user_itr = fstab.find(acc.value);
-        eosio_assert(user_itr!=fstab.end(),"user information not found");
-        //eosio_assert(user_itr->fs_in_use>amount_bytes,"something wrong");
+        check(user_itr!=fstab.end(),"user information not found");
+        //check(user_itr->fs_in_use>amount_bytes,"something wrong");
         if(user_itr->fs_in_use>amount_bytes)
             amount_bytes=user_itr->fs_in_use;
         if(fsacc!=_self){

@@ -1,18 +1,11 @@
 
 #pragma once
 
-//#include <eosiolib/native/eosio/intrinsics_def.hpp>
-//#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-#include <eosiolib/crypto.hpp>
-#include <eosiolib/public_key.hpp>
-#include <eosiolib/name.hpp>
-//#include <eosiolib/types.hpp>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/singleton.hpp>
-#include <eosiolib/symbol.hpp>
-#include <eosiolib/action.hpp>
-#include <eosiolib/fixed_bytes.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
+#include <eosio/crypto.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/singleton.hpp>
 
 #include <string>
 #include <cstdint>
