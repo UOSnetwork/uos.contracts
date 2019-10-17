@@ -277,12 +277,36 @@ namespace eosiosystem {
    };
 
    /**
+    * Voter rates.
+    *
+    * @details stores information on uos calculated rates:
+    * - `owner` the voter
+    * - `social_rate` voter's share in the total social activity, a fraction between 0 and 1
+    * - `transfer_rate` voter's share in the total transfer activity, a fraction between 0 and 1
+    */
+    struct voter_rates {
+        name   owner;
+        double social_rate = 0;
+        double transfer_rate = 0;
+
+        uint64_t primary_key()const { return owner.value; }
+
+        EOSLIB_SERIALIZE( voter_rates, (owner)(social_rate)(transfer_rate) )
+    };
+
+   /**
     * Voters table
     *
     * @details The voters table stores all the `voter_info`s instances, all voters information.
     */
    typedef eosio::multi_index< "voters"_n, voter_info >  voters_table;
 
+   /**
+    * Voter rates table
+    *
+    * @details The voters rates table stores the registered value of voter's rates
+    */
+   typedef eosio::multi_index<  "rates"_n, voter_rates> rates_table;
 
    /**
     * Defines producer info table added in version 1.0
@@ -530,6 +554,7 @@ namespace eosiosystem {
 
       private:
          voters_table            _voters;
+         rates_table             _rates;
          producers_table         _producers;
          producers_table2        _producers2;
          global_state_singleton  _global;
@@ -1128,6 +1153,19 @@ namespace eosiosystem {
           */
          [[eosio::action]]
          void voteproducer( const name& voter, const name& proxy, const std::vector<name>& producers );
+
+         /**
+          * Sets the rate values.
+          *
+          * @details Set rate values for a voter.
+          * The action adds or updates the voter_rates with provided values
+          * Storage change is billed to voter.
+          *
+          * @param voter - the account to set the rates
+          * @param social_rate - voter's share in the total social activity, a fraction between 0 and 1
+          * @param transfer_rate - voter's share in the total transfer activity, a fraction between 0 and 1
+          */
+         void setrates(const name voter, const double social_rate, const  double transfer_rate);
 
          /**
           * Register proxy action.
