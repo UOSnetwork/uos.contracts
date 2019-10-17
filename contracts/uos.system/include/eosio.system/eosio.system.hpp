@@ -1165,6 +1165,7 @@ namespace eosiosystem {
           * @param social_rate - voter's share in the total social activity, a fraction between 0 and 1
           * @param transfer_rate - voter's share in the total transfer activity, a fraction between 0 and 1
           */
+         [[eosio::action]]
          void setrates(const name voter, const double social_rate, const  double transfer_rate);
 
          /**
