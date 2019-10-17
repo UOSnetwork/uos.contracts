@@ -231,6 +231,27 @@ namespace eosiosystem {
    };
 
    /**
+    * Defines calculator_info structure to be stored in calculators table
+    */
+   struct [[eosio::table, eosio::contract("uos.system")]] calculator_info {
+       name         owner;
+       double       total_votes = 0;
+       bool         is_active = true;
+       std::string  url;
+       uint32_t     unpaid_blocks = 0;
+       uint64_t     last_claim_time = 0;
+       uint16_t     location = 0;
+
+       uint64_t primary_key()const { return owner.value;                                   }
+       double   by_votes()const    { return is_active ? -total_votes : total_votes;  }
+       bool     active()const      { return is_active;                               }
+       void     deactivate()       { is_active = false;                              }
+
+       EOSLIB_SERIALIZE( calculator_info, (owner)(total_votes)(is_active)(url)
+               (unpaid_blocks)(last_claim_time)(location) )
+   };
+
+   /**
     * Voter info.
     *
     * @details Voter info stores information about the voter:
@@ -277,6 +298,23 @@ namespace eosiosystem {
    };
 
    /**
+    * Calculator Voter info.
+    *
+    * @details Stores information about the voter related to voting for Calculators:
+    * - `owner` the voter
+    * - `calculators` the calculators approved by this voter
+    */
+   struct calc_voter_info {
+      name                owner;
+      std::vector<name>   calculators;
+
+      uint64_t primary_key()const { return owner.value; }
+
+      // explicit serialization macro is not necessary, used here only to improve compilation time
+      EOSLIB_SERIALIZE( calc_voter_info, (owner)(calculators) )
+   };
+
+   /**
     * Voter rates.
     *
     * @details stores information on uos calculated rates:
@@ -302,6 +340,13 @@ namespace eosiosystem {
    typedef eosio::multi_index< "voters"_n, voter_info >  voters_table;
 
    /**
+    * Calculator voters table
+    *
+    * @details The calculator voters table stores all the `calc_voter_info`s instances
+    */
+   typedef eosio::multi_index< "calcvoters"_n, calc_voter_info>  calc_voters_table;
+
+   /**
     * Voter rates table
     *
     * @details The voters rates table stores the registered value of voter's rates
@@ -318,6 +363,13 @@ namespace eosiosystem {
     * Defines new producer info table added in version 1.3.0
     */
    typedef eosio::multi_index< "producers2"_n, producer_info2 > producers_table2;
+
+   /**
+    * Defines calculator info table
+    */
+   typedef eosio::multi_index< "calculators"_n, calculator_info,
+                               indexed_by<"caltotalvote"_n, const_mem_fun<calculator_info, double, &calculator_info::by_votes>  >
+                               >  calculators_table;
 
    /**
     * Global state singleton added in version 1.0
@@ -554,8 +606,10 @@ namespace eosiosystem {
 
       private:
          voters_table            _voters;
+         calc_voters_table       _calc_voters;
          rates_table             _rates;
          producers_table         _producers;
+         calculators_table       _calculators;
          producers_table2        _producers2;
          global_state_singleton  _global;
          global_state2_singleton _global2;
@@ -1106,6 +1160,32 @@ namespace eosiosystem {
          void unregprod( const name& producer );
 
          /**
+          * Register calculator action.
+          *
+          * @details Register calculator action, indicates that a particular account wishes to become a calculator,
+          * this action will create a  `calculator_info` object for `calculator` scope in calculators tables.
+          *
+          * @param calculator - account registering to be a calculator candidate,
+          * @param url - the url of the calculator, normally the url of the calculator presentation website,
+          * @param location - is the country code as defined in the ISO 3166, https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+          *
+          * @pre Calculator is not already registered
+          * @pre Calculator to register is an account
+          * @pre Authority of calculator to register
+          */
+         [[eosio::action]]
+         void regcalc( const name calculator, const std::string& url, uint16_t location );
+
+         /**
+          * Unregister calculator action.
+          *
+          * @details Deactivate the calculator with account name `calculator`.
+          * @param calculator - the calculator account to unregister.
+          */
+         [[eosio::action]]
+         void unregcalc( const name calculator );
+
+         /**
           * Set ram action.
           *
           * @details Set the ram supply.
@@ -1153,6 +1233,27 @@ namespace eosiosystem {
           */
          [[eosio::action]]
          void voteproducer( const name& voter, const name& proxy, const std::vector<name>& producers );
+
+         /**
+          * Vote calculator action.
+          *
+          * @details Votes for a set of calculators. This action updates the list of `calculators` voted for,
+          * for `voter` account. Voter can vote for a list of at most 30 calculators.
+          * Storage change is billed to `voter`.
+          *
+          * @param voter - the account to change the voted producers for,
+          * @param calculators - the list of calculators to vote for, a maximum of 30 calculators is allowed.
+          *
+          * @pre Calculators must be sorted from lowest to highest and must be registered and active
+          * @pre Voter must authorize this action
+          * @pre Voter must have previously staked some EOS for voting
+          * @pre Voter->staked must be up to date
+          *
+          * @post Every calculator previously voted for will have vote reduced by previous vote weight
+          * @post Every calculator newly voted for will have vote increased by new vote amount
+          */
+         [[eosio::action]]
+         void votecalc( const name voter, const std::vector<name>& calculators );
 
          /**
           * Sets the rate values.
@@ -1370,7 +1471,11 @@ namespace eosiosystem {
 
          // defined in voting.hpp
          void update_elected_producers( const block_timestamp& timestamp );
-         void update_votes( const name& voter, const name& proxy, const std::vector<name>& producers, bool voting );
+         void update_votes( const name& voter,
+                            const name& proxy,
+                            const std::vector<name>& producers,
+                            bool voting,
+                            const std::vector<name>& calculators );
          void propagate_weight_change( const voter_info& voter );
          double update_producer_votepay_share( const producers_table2::const_iterator& prod_itr,
                                                const time_point& ct,
