@@ -5,219 +5,8 @@
 
 namespace UOS{
 
-    void uos_calculator::regcalc(const name acc, const eosio::public_key& key, const string& url, uint16_t location) {
-        require_auth(acc);
-        calcs_table calcs(_self,_self.value);
-        auto itr = calcs.find(acc.value);
-        if( itr != calcs.end() ){
-            calcs.modify(itr,_self, [&] (calc_info &item){
-                item.location=location;
-                item.url=url;
-                item.is_active=true;
-                item.calc_key=key;
-            });
-        }
-        else{
-            calcs.emplace(_self,[&] (calc_info &item){
-                item.location=location;
-                item.url=url;
-                item.is_active=true;
-                item.calc_key=key;
-                item.owner=acc;
-
-            });
-        }
-    }
-
-    void uos_calculator::rmcalc(const name acc) {
-        require_auth(_self);
-        calcs_table calcs(_self,_self.value);
-        auto itr = calcs.find(acc.value);
-        if( itr != calcs.end() ){
-            calcs.erase(itr);
-        }
-    }
-
-    void uos_calculator::unregcalc(const name acc) {
-        require_auth(acc);
-        calcs_table calcs(_self,_self.value);
-        auto itr = calcs.find(acc.value);
-        if( itr != calcs.end() ){
-            calcs.modify(itr,_self,[&](calc_info &item){
-               item.deactivate();
-            });
-        }
-    }
-
-    void uos_calculator::stake(const name acc, const eosio::asset value) {
-        require_auth(acc);
-
-        check(value.symbol==_state.get().base_asset.symbol,"Asset symbol is incompatible with used in contract");
-
-        voters_table voters(_self,acc.value);
-        auto itr=voters.find(acc.value);
-        if(itr == voters.end()){
-            voters.emplace(acc,[&](voter_info& a){
-               a.stake = value;
-               a.owner = acc;
-            });
-        }else{
-            voters.modify(itr,acc,[&](voter_info& a){
-               a.stake+=value;
-            });
-        }
-        check(is_account(_state.get().fund_name),(std::string("create uos.stake first ")+ name{_state.get().fund_name}.to_string()).c_str());
-        action(
-            permission_level{ acc, name{"active"} },
-            name{"eosio.token"}, name{"transfer"},
-            std::make_tuple(acc, _state.get().fund_name, value, std::string("stake tokens"))
-        ).send();
-
-    }
-
-    void uos_calculator::refund(const name acc) {
-        require_auth(acc);
-        voters_table voters(_self,acc.value);
-        auto itr=voters.find(acc.value);
-        check(itr != voters.end(), "there is nothing to refund here");
-        //todo check timeout
-
-        check(is_account(_state.get().fund_name),"create uos.stake first");
-
-        //todo: take back votes from candidates first of all (unvote)
-
-        action(
-            permission_level{ _state.get().fund_name, name{"active"} },
-            name{"eosio.token"}, name{"transfer"},
-            std::make_tuple(_state.get().fund_name, itr->owner, itr->stake, std::string("unstake tokens"))
-        ).send();
-
-
-        voters.erase(itr);
-
-    }
-
-    void uos_calculator::iscalc(const name acc) {
-        require_auth(acc);
-        calcs_table calcs(_self,_self.value);
-        auto itr = calcs.find(acc.value);
-        check(itr!=calcs.end(),(string("This account is not in calcs")+name{acc}.to_string()).c_str());
-    }
-
-    bool uos_calculator::check_calc(const name acc) {
-        calcs_table calcs(_self,_self.value);
-        auto itr = calcs.find(acc.value);
-        if(itr==calcs.end())
-            return false;
-        return itr->is_active;
-    }
-
-    asset uos_calculator::get_stake(name voter) {
-        voters_table voters(_self,voter.value);
-        auto itr = voters.find(voter.value);
-        if(itr==voters.end()){
-            asset ret = _state.get().base_asset;
-            ret.amount = 0;
-            return ret;
-        }
-        return itr->stake;
-
-    }
-
-    void uos_calculator::votecalc(const name voter, std::vector<name> calcs) {
-        require_auth(voter);
-        voters_table voters(_self,voter.value);
-        auto itr_voter = voters.find(voter.value);
-        check(itr_voter!=voters.end(),"Voter not found in table. Need to stake first");
-        check(itr_voter->stake_voted.amount==0,"unvote all calcs first");
-
-        for(auto item : calcs){
-            check(is_account(item),(string("account not found: ") + (name{item}).to_string()).c_str());
-            check(check_calc(item),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
-        }
-
-        int64_t vote_for_each = get_stake(voter).amount/(int64_t )calcs.size();
-        check(vote_for_each>0, "you can not vote zero tokens for each candidate");
-        calcs_table c_table(_self,_self.value);
-        for(auto item : calcs){
-            auto itr = c_table.find(item.value);
-            check(itr!=c_table.end(),(string("account has not been registered or not active: ") + (name{item}).to_string()).c_str());
-            c_table.modify(itr,_self,[&](calc_info& info){
-               info.total_votes+= static_cast<uint64_t > (vote_for_each);
-            });
-        }
-        auto votesum = vote_for_each*(int64_t)calcs.size();
-
-        voters.modify(itr_voter,voter,[&](voter_info &vi){
-            vi.stake_voted.symbol=vi.stake.symbol;
-            vi.stake_voted.amount = votesum;
-            for(auto calc : calcs){
-                vi.calcs.push_back(candidate_info{calc,vote_for_each});
-            }
-//            vi.calcs = calcs;
-        });
-    }
-
-    bool uos_calculator::unvote_vector(voters_table &voters, voters_table::const_iterator &itr, const name &voter, std::vector<name> &calcs_to_unvote) {
-        calcs_table c_table(_self,_self.value);
-        voters.modify(itr,voter,[&](voter_info& vi){
-            //get votes back
-            std::vector<candidate_info> new_list;
-            for(auto calc: vi.calcs){
-                if(std::find(calcs_to_unvote.begin(),calcs_to_unvote.end(),calc.calc)!=calcs_to_unvote.end()){
-                    auto citr = c_table.find(calc.calc.value);
-                    //check(citr!=c_table.end(),"Something wrong with data about calc");
-                    if(citr==c_table.end())
-                        return false; //todo
-                    c_table.modify(citr,_self,[&](calc_info &ci){
-                        ci.total_votes-= static_cast<uint64_t >(calc.bid);
-                    });
-                    vi.stake_voted.amount-=calc.bid;
-                    calc.bid=0;
-                }else{
-                    new_list.push_back(calc);
-                }
-            }
-            vi.calcs = new_list;
-        });
-        return true;
-
-    }
-
-    void uos_calculator::unvote(const name voter, std::vector<name> calcs_to_unvote) {
-        require_auth(voter);
-        voters_table voters(_self,voter.value);
-        auto itr = voters.find(voter.value);
-        check(itr!=voters.end(),"Voter not found");
-
-        check(unvote_vector(voters,itr,voter,calcs_to_unvote),"unvote vector error");
-
-
-    }
-
-    void uos_calculator::unvoteall(const name voter) {
-        require_auth(voter);
-        voters_table voters(_self,voter.value);
-        auto itr = voters.find(voter.value);
-        check(itr!=voters.end(),"Voter not found");
-        std::vector<name> calcs_list;
-        for(auto calc : itr->calcs){
-            calcs_list.push_back(calc.calc);
-        }
-        check(unvote_vector(voters,itr,voter,calcs_list),"unvote vector error");
-        //unvote(voter,calcs_list);
-    }
-
-    void uos_calculator::setasset(const eosio::asset value) {
-        require_auth(_self);
-        check((_state.get().base_asset.symbol)!=(value.symbol),"Nothing to change");
-        //todo check if there is someone's stake, then..
-    }
-    
-
     void uos_calculator::withdrawal(name owner) {
         require_auth(owner);
-        print("hello");
         accounts_table actable(_self,owner.value);
         auto act_itr = actable.find(owner.value);
         check(act_itr!=actable.end(),"Reward not found");
@@ -291,9 +80,7 @@ namespace UOS{
 
     void uos_calculator::addsum(name issuer, name receiver, double sum, std::string message) {
         require_auth(issuer);
-//        print(message);
         check(is_account(receiver),"error account name");
-//        check(is_issuer(issuer),"account is not registered as issuer");
         accounts_table actable(_self,receiver.value);
         auto act_itr = actable.find(receiver.value);
         if(act_itr==actable.end()){
@@ -306,21 +93,6 @@ namespace UOS{
                 item.account_sum+=sum;
             });
         }
-    }
-
-    void uos_calculator::regissuer(name issuer) {
-        require_auth(issuer);
-        check(!is_issuer(issuer),"Already registered as issuer");
-        issuers_table isstable(_self,_self.value);
-        isstable.emplace(issuer,[&](issuer_info &item){
-            item.issuer=issuer;
-        });
-    }
-
-    bool uos_calculator::is_issuer(name acc) {
-        issuers_table isstable(_self,_self.value);
-        auto iss_itr = isstable.find(acc.value);
-        return iss_itr!=isstable.end();
     }
 
     void uos_calculator::setrate(string name, string value) {
@@ -498,5 +270,5 @@ namespace UOS{
     void uos_calculator::makecontorg(const name acc, string organization_id, string content_id, uint8_t content_type_id,
                                      string parent_content_id) {}
                                      
-    EOSIO_DISPATCH(uos_calculator,(regcalc)(rmcalc)(unregcalc)(iscalc)(stake)(refund)(votecalc)(setasset)(addsum)(regissuer)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setratetran)(setallcalc)(reporthash))
+    EOSIO_DISPATCH(uos_calculator,(addsum)(withdrawal)(withdraw)(setrate)(eraserate)(erase)(setratetran)(setallcalc)(reporthash))
 }
