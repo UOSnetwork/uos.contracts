@@ -1,6 +1,4 @@
 #include "uos.airdrop.hpp"
-#include <eosio.token/eosio.token.hpp>
-
 
 namespace UOS {
     void uos_airdrop::send(uint64_t external_id,
@@ -21,21 +19,24 @@ namespace UOS {
 //        print("CHECKING FOR EXTERNAL_ID\n");
         auto ei_index = r_table.get_index<"external.id"_n>();
         auto ei_itr = ei_index.find(external_id);
-        eosio_assert(ei_itr == ei_index.end(), "Already have the receipt with the same external_id");
+        check(ei_itr == ei_index.end(), "Already have the receipt with the same external_id");
 
 //        print("CHECKING FOR ACC_NAME+AIRDROP_ID\n");
         auto an_index = r_table.get_index<"acc.name"_n>();
         for(auto an_itr = an_index.find(acc_name.value); an_itr != an_index.end() && an_itr->acc_name == acc_name; an_itr++){
 //            print(an_itr->id, " ", an_itr->external_id, " ", an_itr->airdrop_id, " ", name{an_itr->acc_name}, "\n");
-            eosio_assert(an_itr->airdrop_id != airdrop_id, "Already have the receipt with the same acc_name and airdrop_id");
+            check(an_itr->airdrop_id != airdrop_id, "Already have the receipt with the same acc_name and airdrop_id");
         }
 
 //        print("SENDING THE TOKENS\n");
-        eosio::asset ast(amount, eosio::symbol(_symbol,4));
+        asset ast(amount, eosio::symbol(_symbol,4));
 //        ast.symbol.print();print("\n");
 //        ast.print();print("\n");
-        INLINE_ACTION_SENDER(eosio::token, transfer)( "eosio.token"_n, {_self, "active"_n},
-                                                      { _self, acc_name, ast, std::string("airdrop") } );
+        action(
+            permission_level{ _self, name{"active"} },
+            name{"eosio.token"}, name{"transfer"},
+            std::make_tuple(_self, acc_name, ast, string("airdrop"))
+        ).send();
 
 //        print("ADDING THE RECEIPT\n");
         r_table.emplace(_self, [&](rec_entry &rec) {

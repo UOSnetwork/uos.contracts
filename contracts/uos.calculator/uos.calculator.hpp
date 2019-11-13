@@ -1,18 +1,11 @@
 
 #pragma once
 
-//#include <eosiolib/native/eosio/intrinsics_def.hpp>
-//#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-#include <eosiolib/crypto.hpp>
-#include <eosiolib/public_key.hpp>
-#include <eosiolib/name.hpp>
-//#include <eosiolib/types.hpp>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/singleton.hpp>
-#include <eosiolib/symbol.hpp>
-#include <eosiolib/action.hpp>
-#include <eosiolib/fixed_bytes.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
+#include <eosio/crypto.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/singleton.hpp>
 
 #include <string>
 #include <cstdint>
@@ -39,42 +32,6 @@ namespace UOS{
                 }
         }
 
-        [[eosio::action]]
-        void regcalc(const name acc, const eosio::public_key& key, const string& url, uint16_t location);
-        //void regcalc(const account_name acc, );
-
-        [[eosio::action]]
-        void rmcalc(const name acc);
-
-        [[eosio::action]]
-        void unregcalc(const name acc);
-
-        [[eosio::action]]
-        void iscalc(const name acc);                    //check if account is allowed to calculate activity index. It will use assert. May be add statistics for calculators?
-
-        [[eosio::action]]
-        void stake(const name voter, const asset value);  //transfer money to stake account
-
-        [[eosio::action]]
-        void refund(const name voter);                    //todo: transfer money back from stake account +
-
-        [[eosio::action]]
-        void votecalc(const name voter, std::vector<name> calcs);
-
-        [[eosio::action]]
-        void unvote(const name voter, std::vector<name> calcs);
-
-        [[eosio::action]]
-        void unvoteall(const name voter);
-
-        [[eosio::action]]
-        void setasset(const asset value);                       //todo +-
-
-        bool check_calc(const name calc);
-
-        asset get_stake(name);
-
-
 ////    from uos.accounter {
 
         [[eosio::action]]
@@ -86,9 +43,6 @@ namespace UOS{
         ////sender operations
         [[eosio::action]]
         void addsum(name issuer, name receiver, double sum, string message);
-
-        [[eosio::action]]
-        void regissuer(name issuer);
 
 ////    } from uos.accounter
 
@@ -125,13 +79,8 @@ namespace UOS{
         void reporthash(const name acc, string hash, uint64_t block_num, string memo);
 
 ////    } from branch "direct set"
+
     private:
-
-        //  const CALC_NUM = 8;
-
-        //  calc_info is modified producer_info
-
-
 
         struct  [[eosio::table("global")]]
         contract_state{
@@ -140,57 +89,12 @@ namespace UOS{
             //todo
         };
 
-
-        struct  [[eosio::table]]
-        calc_info{
-            name                  owner;
-            uint64_t              total_votes = 0;
-            eosio::public_key     calc_key; /// a packed public key object
-            bool                  is_active = true;
-            string                url;
-            uint32_t              unpaid_blocks = 0;
-            uint64_t              last_claim_time = 0;
-            uint16_t              location = 0;
-            uint64_t primary_key() const { return owner.value;}
-            void     deactivate()       { calc_key = eosio::public_key(); is_active = false; } //??
-
-            EOSLIB_SERIALIZE( calc_info, (owner)(total_votes)(calc_key)(is_active)(url)(unpaid_blocks)(last_claim_time)(location) )
-
-        };
-
-        struct candidate_info{
-            name calc;
-            int64_t bid;
-        };
-
-
-        struct  [[eosio::table]]
-        voter_info{
-            name owner;
-            std::vector<candidate_info> calcs;
-            asset stake;
-            asset stake_voted;
-            uint64_t primary_key() const {return owner.value;}
-
-            EOSLIB_SERIALIZE (voter_info, (owner)(calcs)(stake)(stake_voted))
-        };
-
-
-
-
-        typedef multi_index <"calcs"_n, calc_info> calcs_table;
-
-        typedef multi_index <"voters"_n, voter_info> voters_table;
-
         typedef singleton <"state"_n, contract_state> contract_state_singleton;
 
 
         contract_state_singleton  _state;
 
-        bool unvote_vector(voters_table &voters, voters_table::const_iterator &itr, const name &voter, std::vector<name> &calcs_to_unvote);
-
 ////         from uos.accounter {
-
 
         struct  [[eosio::table]]
         account_info{
@@ -202,27 +106,11 @@ namespace UOS{
             EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
         };
 
-
-        struct  [[eosio::table]]
-        issuer_info{
-            name issuer;
-
-            uint64_t primary_key() const {return issuer.value;}
-
-            EOSLIB_SERIALIZE(issuer_info,(issuer))
-        };
-
-
         typedef multi_index <"account"_n,account_info> accounts_table;
-        typedef multi_index <"issuers"_n, issuer_info> issuers_table;
-
-        bool is_issuer(name acc);
 
 ////         } from uos.accounter
 
 ////         from uos.activity {
-
-
 
         struct  [[eosio::table]]
         rate {
@@ -271,7 +159,6 @@ namespace UOS{
 
 
 ////    from branch "direct set" {
-
 
         struct  [[eosio::table]]
         calc_register{
@@ -325,7 +212,6 @@ namespace UOS{
         > reports_table;
 
 ////    } from branch "direct set"
-
 
         struct  [[eosio::table]]
         cons_block{

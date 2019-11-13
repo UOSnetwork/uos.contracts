@@ -2,18 +2,10 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-//#include <eosiolib/crypto.h>
-//#include <eosiolib/public_key.hpp>
-#include <eosiolib/name.hpp>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/action.hpp>
-#include <eosiolib/symbol.hpp>
-#include <eosio.token/eosio.token.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
+#include <eosio/asset.hpp>
 #include <string>
-//#include <cstdint>
-//#include <vector>
 
 #define FS_ALLOC_SPACE 1000000000
 #define FS_SLICE_SIZE  10000000

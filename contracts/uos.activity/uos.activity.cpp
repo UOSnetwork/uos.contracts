@@ -4,9 +4,9 @@ namespace UOS {
     void uos_activity::usertouser(const name acc_from, const name acc_to, uint8_t interaction_type_id)
     {
         print("usertouser acc_from = ", name{acc_from}, " acc_to = ", name{acc_to}, " interaction_type_id = ", (int)interaction_type_id);
-        eosio_assert( acc_from != acc_to, "cannot transfer to self" );
+        check( acc_from != acc_to, "cannot transfer to self" );
         require_auth( acc_from );
-        eosio_assert( is_account( acc_to ), "to account does not exist");
+        check( is_account( acc_to ), "to account does not exist");
 
     }
 
@@ -57,7 +57,7 @@ namespace UOS {
         if (itr->acc_name == name_acc) {
 //        secondary_index.erase(itr);//erase should be failed
             auto iter_rate = rates.find(itr->key);
-            eosio_assert(iter_rate != rates.end(), "Rate is key not found");
+            check(iter_rate != rates.end(), "Rate is key not found");
 
             rates.modify(iter_rate, _self, [&](rate &item) {
                 item.value = value;
