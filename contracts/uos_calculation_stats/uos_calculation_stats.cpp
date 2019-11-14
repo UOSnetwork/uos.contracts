@@ -15,7 +15,7 @@ namespace UOS {
 //        printf("ref: %hu\n", ref_bl_num);
 
          //TODO: check block_number
-        calcstats_table stats(_self, _self);
+        calcstats_table stats(_self, _self.value);
         auto itr = stats.find(block_num);
         if (itr != stats.end()) {
             stats.modify(itr,_self, [&](calc_stats &item) {
@@ -33,6 +33,4 @@ namespace UOS {
             });
         }
     }
-
-    EOSIO_ABI(uos_calculation_stats, (setstats))
 }

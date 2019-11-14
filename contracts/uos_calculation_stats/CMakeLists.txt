@@ -1,8 +1,9 @@
-file(GLOB ABI_FILES "*.abi")
-configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+add_contract(uos_calculation_stats uos_calculation_stats uos_calculation_stats.cpp)
 
-add_wast_executable(TARGET uos_calculation_stats
-  INCLUDE_FOLDERS ${STANDARD_INCLUDE_FOLDERS}
-  LIBRARIES libc libc++ eosiolib
-  DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(uos_calculation_stats
+        PUBLIC
+        )
+
+set_target_properties(uos_calculation_stats
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")

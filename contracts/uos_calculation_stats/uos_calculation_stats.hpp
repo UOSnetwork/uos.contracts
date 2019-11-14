@@ -1,28 +1,27 @@
 #pragma once
 
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-#include <eosiolib/crypto.h>
-#include <eosiolib/public_key.hpp>
-#include <eosiolib/types.h>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/transaction.hpp>
-#include <eosiolib/chain.h>
+#include <eosio/eosio.hpp>
+#include <eosio/system.hpp>
+#include <string>
+#include <cstdint>
+#include <vector>
+
 
 namespace UOS {
     using namespace eosio;
     using std::string;
 
-    class uos_calculation_stats : public eosio::contract {
+    class [[eosio::contract("uos_calculation_stats")]]uos_calculation_stats : public eosio::contract {
     public:
-        uos_calculation_stats(account_name self) : contract(self) {}
+        uos_calculation_stats(name receiver, name code, datastream<const char*> ds)
+                : contract(receiver, code, ds) {}
 
-        /// @abi action
+        [[eosio::action]]
         void setstats(uint64_t block_num, string network_activity, string emission, string total_emission);
     private:
 
-        ///@abi table calcstats
-        struct calc_stats {
+        struct [[eosio::table]]
+        calc_stats {
             uint64_t block_num;
             string network_activity;
             string emission;
@@ -33,7 +32,7 @@ namespace UOS {
             EOSLIB_SERIALIZE(calc_stats, (block_num)(network_activity)(emission)(total_emission))
         };
 
-        typedef multi_index <N(calcstats), calc_stats,indexed_by<N(reverse_key),
+        typedef multi_index <"calcstats"_n, calc_stats,indexed_by<"reversekey"_n,
                 const_mem_fun<calc_stats, uint64_t , &calc_stats::reverse_key>>> calcstats_table;
 
     };
