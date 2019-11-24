@@ -29,6 +29,21 @@ namespace UOS{
         actable.modify(act_itr,owner,[&](account_info &account){
             account.account_sum-=double(val.amount)/k;
         });
+
+        totals_table tottable(_self,_self.value);
+        auto tot_itr = tottable.find(owner.value);
+        if(tot_itr==tottable.end()){
+            tottable.emplace(owner,[&](total_values &item){
+                item.owner=owner;
+                item.total_emission=val;
+                item.total_withdrawal=val;
+            });
+        }else{
+            tottable.modify(tot_itr,owner,[&](total_values &item){
+                item.total_withdrawal+=val;
+            });
+        }
+
         action(
             permission_level{ name{"eosio"},name{"active"} },
             name{"eosio.token"}, name{"issue"},
@@ -66,6 +81,25 @@ namespace UOS{
         actable.modify(act_itr,owner,[&](account_info &account){
             account.account_sum-=double(val.amount)/k;
         });
+
+        asset ast;
+        ast.symbol = symbol(CORE_SYMBOL,4);
+        ast.amount = static_cast<int64_t>(act_itr->account_sum*10000);
+        
+        totals_table tottable(_self,_self.value);
+        auto tot_itr = tottable.find(owner.value);
+        if(tot_itr==tottable.end()){
+            tottable.emplace(owner,[&](total_values &item){
+                item.owner=owner;
+                item.total_emission=ast;
+                item.total_withdrawal=val;
+            });
+        }else{
+            tottable.modify(tot_itr,owner,[&](total_values &item){
+                item.total_withdrawal+=val;
+            });
+        }
+
         action(
             permission_level{ name{"eosio"},name{"active"} },
             name{"eosio.token"}, name{"issue"},
@@ -91,6 +125,24 @@ namespace UOS{
         }else{
             actable.modify(act_itr,receiver,[&](account_info &item){
                 item.account_sum+=sum;
+            });
+        }
+
+        asset ast;
+        ast.symbol = symbol(CORE_SYMBOL,4);
+        ast.amount = static_cast<int64_t>(sum*10000);
+        
+        totals_table tottable(_self,_self.value);
+        auto tot_itr = tottable.find(receiver.value);
+        if(tot_itr==tottable.end()){
+            tottable.emplace(receiver,[&](total_values &item){
+                item.owner=receiver;
+                item.total_emission=ast;
+                item.total_withdrawal=ast*0;
+            });
+        }else{
+            tottable.modify(tot_itr,receiver,[&](total_values &item){
+                item.total_emission+=ast;
             });
         }
     }

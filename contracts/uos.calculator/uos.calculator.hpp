@@ -106,7 +106,19 @@ namespace UOS{
             EOSLIB_SERIALIZE(account_info, (owner)(account_sum))
         };
 
+        struct  [[eosio::table]]
+        total_values{
+            name owner;
+            asset total_emission;
+            asset total_withdrawal;
+
+            uint64_t  primary_key() const {return owner.value;}
+
+            EOSLIB_SERIALIZE(total_values, (owner)(total_emission)(total_withdrawal))
+        };
+
         typedef multi_index <"account"_n,account_info> accounts_table;
+        typedef multi_index <"totals"_n,total_values> totals_table;
 
 ////         } from uos.accounter
 
