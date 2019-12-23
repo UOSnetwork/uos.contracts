@@ -44,12 +44,12 @@ namespace UOS{
         action(
             permission_level{ name{"eosio"},name{"active"} },
             name{"eosio.token"}, name{"issue"},
-            std::make_tuple(_self, val, std::string("issue tokens for account"))
+            std::make_tuple(name{"eosio"}, val, std::string("issue tokens for account"))
         ).send();
         action(
-            permission_level{ _self, name{"active"} },
+            permission_level{ name{"eosio"}, name{"active"} },
             name{"eosio.token"}, name{"transfer"},
-            std::make_tuple(_self, owner, val, std::string("transfer issued tokens for account"))
+            std::make_tuple(name{"eosio"}, owner, val, std::string("transfer issued tokens for account"))
         ).send();
     }
 
@@ -99,12 +99,12 @@ namespace UOS{
         action(
             permission_level{ name{"eosio"},name{"active"} },
             name{"eosio.token"}, name{"issue"},
-            std::make_tuple(_self, val, std::string("issue tokens for account"))
+            std::make_tuple(name{"eosio"}, val, std::string("issue tokens for account"))
         ).send();
         action(
-            permission_level{ _self, name{"active"} },
+            permission_level{ name{"eosio"}, name{"active"} },
             name{"eosio.token"}, name{"transfer"},
-            std::make_tuple(_self, owner, val, std::string("transfer issued tokens for account"))
+            std::make_tuple(name{"eosio"}, owner, val, std::string("transfer issued tokens for account"))
         ).send();
     }
 
