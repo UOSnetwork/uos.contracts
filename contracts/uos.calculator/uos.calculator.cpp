@@ -11,10 +11,8 @@ namespace UOS{
         auto act_itr = actable.find(owner.value);
         check(act_itr!=actable.end(),"Reward not found");
         double reward = act_itr->account_sum;
-        print(reward);
         asset val;
         val.symbol = symbol(CORE_SYMBOL,4);
-        print(val);
         auto dotdigits = (uint64_t )val.symbol.precision();
         auto k = 1;
         for(uint64_t i=0;i<dotdigits;++i ){
@@ -24,7 +22,6 @@ namespace UOS{
 
         val.amount = static_cast<int64_t >(temp);
         check(val.amount > 0,"nothing to withdrawal");
-        print(val);
 
         actable.modify(act_itr,owner,[&](account_info &account){
             account.account_sum-=double(val.amount)/k;
@@ -76,7 +73,6 @@ namespace UOS{
         double temp = reward*k;
         val.amount = static_cast<int64_t >(temp);
         check(val.amount > 0,"nothing to withdrawal");
-        print(val);
 
         actable.modify(act_itr,owner,[&](account_info &account){
             account.account_sum-=double(val.amount)/k;
