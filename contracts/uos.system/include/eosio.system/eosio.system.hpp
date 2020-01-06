@@ -304,7 +304,7 @@ namespace eosiosystem {
     * - `owner` the voter
     * - `calculators` the calculators approved by this voter
     */
-   struct calc_voter_info {
+   struct [[eosio::table, eosio::contract("uos.system")]] calc_voter_info {
       name                owner;
       std::vector<name>   calculators;
 
@@ -322,7 +322,7 @@ namespace eosiosystem {
     * - `social_rate` voter's share in the total social activity, a fraction between 0 and 1
     * - `transfer_rate` voter's share in the total transfer activity, a fraction between 0 and 1
     */
-    struct voter_rates {
+    struct [[eosio::table, eosio::contract("uos.system")]] voter_rates {
         name   owner;
         double social_rate = 0;
         double transfer_rate = 0;
